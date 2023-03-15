@@ -24,6 +24,7 @@ dubbo:
   protocol:
     name: dubbo
     port: -1
+    serialization: fastjson2
   registry:
     id: zk-registry
     address: zookeeper://127.0.0.1:2181
