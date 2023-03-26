@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.beans.factory.annotation;
+package org.apache.dubbo.config.spring6.beans.factory.annotation;
 
+import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
@@ -27,18 +28,26 @@ import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ServiceBean;
+import org.apache.dubbo.config.spring.beans.factory.annotation.AnnotationPropertyValuesAdapter;
+import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder;
+import org.apache.dubbo.config.spring.beans.factory.annotation.ServicePackagesHolder;
 import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
 import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
 import org.apache.dubbo.config.spring.util.SpringCompatUtils;
-
-import com.alibaba.spring.util.AnnotationUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
+import org.springframework.beans.factory.annotation.InjectionMetadata;
+import org.springframework.beans.factory.aot.AotServices;
+import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution;
+import org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor;
+import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
+import org.springframework.beans.factory.aot.BeanRegistrationAotProcessor;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -49,6 +58,8 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.beans.factory.support.BeanNameGenerator;
+import org.springframework.beans.factory.support.RegisteredBean;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -58,6 +69,7 @@ import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.ConfigurationClassPostProcessor;
+import org.springframework.context.annotation.ConfigurationClassUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.MethodMetadata;
@@ -65,7 +77,9 @@ import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
+import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -78,13 +92,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.alibaba.spring.util.ObjectUtils.of;
 import static java.util.Arrays.asList;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUPLICATED_BEAN_DEFINITION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_ANNOTATIONS_FOUND;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_BEANS_SCANNED;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUPLICATED_BEAN_DEFINITION;
 import static org.apache.dubbo.common.utils.AnnotationUtils.filterDefaultValues;
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
 import static org.apache.dubbo.config.spring.util.DubboAnnotationUtils.resolveInterfaceName;
@@ -99,10 +112,9 @@ import static org.springframework.util.ClassUtils.resolveClassName;
  *
  * @see AnnotationBeanDefinitionParser
  * @see BeanDefinitionRegistryPostProcessor
- * @since 2.7.7
+ * @since 3.2
  */
-public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware,
-        ResourceLoaderAware, BeanClassLoaderAware, ApplicationContextAware, InitializingBean {
+public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware, ResourceLoaderAware, BeanClassLoaderAware, ApplicationContextAware, InitializingBean {
 
     public static final String BEAN_NAME = "dubboServiceAnnotationPostProcessor";
 
@@ -137,8 +149,12 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         this(asList(packagesToScan));
     }
 
-    public ServiceAnnotationPostProcessor(Collection<?> packagesToScan) {
-        this.packagesToScan = (Set<String>) packagesToScan.stream().collect(Collectors.toSet());
+    public ServiceAnnotationPostProcessor(Collection<String> packagesToScan) {
+        this(new LinkedHashSet<>(packagesToScan));
+    }
+
+    public ServiceAnnotationPostProcessor(Set<String> packagesToScan) {
+        this.packagesToScan = packagesToScan;
     }
 
     @Override
@@ -619,6 +635,17 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.servicePackagesHolder = applicationContext.getBean(ServicePackagesHolder.BEAN_NAME, ServicePackagesHolder.class);
     }
+
+//    @Override
+//    public BeanFactoryInitializationAotContribution processAheadOfTime(ConfigurableListableBeanFactory beanFactory) {
+//        Map<Class<? extends RuntimeHintsRegistrar>, RuntimeHintsRegistrar> registrars = AotServices
+//            .factories(beanFactory.getBeanClassLoader()).load(RuntimeHintsRegistrar.class).stream()
+//            .collect(LinkedHashMap::new, (map, item) -> map.put(item.getClass(), item), Map::putAll);
+//        extractFromBeanFactory(beanFactory).forEach(registrarClass ->
+//            registrars.computeIfAbsent(registrarClass, BeanUtils::instantiateClass));
+//        return null;
+//    }
+
 
     private class ScanExcludeFilter implements TypeFilter {
 

@@ -58,7 +58,7 @@ public class NativeConfigurationWriter {
     private File createIfNecessary(String filename) throws IOException {
         Path outputDirectory = this.basePath.resolve("META-INF").resolve("native-image");
         if (this.groupId != null && this.artifactId != null) {
-            outputDirectory = outputDirectory.resolve(this.groupId).resolve(this.artifactId);
+            outputDirectory = outputDirectory.resolve(this.groupId).resolve(this.artifactId).resolve("dubbo");
         }
         outputDirectory.toFile().mkdirs();
         File file = outputDirectory.resolve(filename).toFile();
