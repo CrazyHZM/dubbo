@@ -1,4 +1,5 @@
 mock=org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterWrapper
+scope=org.apache.dubbo.rpc.cluster.support.wrapper.ScopeClusterWrapper
 failover=org.apache.dubbo.rpc.cluster.support.FailoverCluster
 failfast=org.apache.dubbo.rpc.cluster.support.FailfastCluster
 failsafe=org.apache.dubbo.rpc.cluster.support.FailsafeCluster
@@ -8,3 +9,6 @@ available=org.apache.dubbo.rpc.cluster.support.AvailableCluster
 mergeable=org.apache.dubbo.rpc.cluster.support.MergeableCluster
 broadcast=org.apache.dubbo.rpc.cluster.support.BroadcastCluster
 zone-aware=org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster
+observationsender=org.apache.dubbo.metrics.observation.ObservationSenderFilter
+metricsClusterFilter=org.apache.dubbo.metrics.filter.MetricsClusterFilter
+

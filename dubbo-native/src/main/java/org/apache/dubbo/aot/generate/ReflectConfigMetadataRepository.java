@@ -40,17 +40,17 @@ public class ReflectConfigMetadataRepository {
     }
 
     public ReflectConfigMetadataRepository registerAdaptiveType(List<Class<?>> classes) {
-        types.addAll(classes.stream().map(this::buildTypeDescriberWithConstructor).collect(Collectors.toList()));
+        types.addAll(classes.stream().filter(Objects::nonNull).map(this::buildTypeDescriberWithConstructor).collect(Collectors.toList()));
         return this;
     }
 
     public ReflectConfigMetadataRepository registerBeanType(List<Class<?>> classes) {
-        types.addAll(classes.stream().map(this::buildTypeDescriberWithConstructor).collect(Collectors.toList()));
+        types.addAll(classes.stream().filter(Objects::nonNull).map(this::buildTypeDescriberWithConstructor).collect(Collectors.toList()));
         return this;
     }
 
     public ReflectConfigMetadataRepository registerConfigType(List<Class<?>> classes) {
-        types.addAll(classes.stream().map(this::buildTypeDescriberWithConstructor).collect(Collectors.toList()));
+        types.addAll(classes.stream().filter(Objects::nonNull).map(this::buildTypeDescriberWithConstructor).collect(Collectors.toList()));
         return this;
     }
 
