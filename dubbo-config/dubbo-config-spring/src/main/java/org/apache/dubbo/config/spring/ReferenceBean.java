@@ -25,6 +25,7 @@ import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanSupport;
 import org.apache.dubbo.config.spring.schema.DubboBeanDefinitionParser;
+import org.apache.dubbo.config.spring.util.AotWithSpringDetector;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.proxy.AbstractProxyFactory;
 
@@ -212,8 +213,14 @@ public class ReferenceBean<T> implements FactoryBean<T>,
         // pre init xml reference bean or @DubboReference annotation
         Assert.notEmptyString(getId(), "The id of ReferenceBean cannot be empty");
         BeanDefinition beanDefinition = beanFactory.getBeanDefinition(getId());
-        this.interfaceClass = (Class<?>) beanDefinition.getAttribute(ReferenceAttributes.INTERFACE_CLASS);
-        this.interfaceName = (String) beanDefinition.getAttribute(ReferenceAttributes.INTERFACE_NAME);
+        if (AotWithSpringDetector.useGeneratedArtifacts()){
+            this.interfaceClass =  (Class<?>) beanDefinition.getPropertyValues().get(ReferenceAttributes.INTERFACE_CLASS);
+            this.interfaceName = (String) beanDefinition.getPropertyValues().get(ReferenceAttributes.INTERFACE_NAME);
+
+        }else {
+            this.interfaceClass = (Class<?>) beanDefinition.getAttribute(ReferenceAttributes.INTERFACE_CLASS);
+            this.interfaceName = (String) beanDefinition.getAttribute(ReferenceAttributes.INTERFACE_NAME);
+        }
         Assert.notNull(this.interfaceClass, "The interface class of ReferenceBean is not initialized");
 
         if (beanDefinition.hasAttribute(Constants.REFERENCE_PROPS)) {
@@ -365,4 +372,11 @@ public class ReferenceBean<T> implements FactoryBean<T>,
         }
     }
 
+    public void setInterfaceClass(Class<?> interfaceClass) {
+        this.interfaceClass = interfaceClass;
+    }
+
+    public void setInterfaceName(String interfaceName) {
+        this.interfaceName = interfaceName;
+    }
 }

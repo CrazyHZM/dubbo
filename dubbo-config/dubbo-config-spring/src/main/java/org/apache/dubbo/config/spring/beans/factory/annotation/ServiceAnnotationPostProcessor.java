@@ -29,6 +29,7 @@ import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
 import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
+import org.apache.dubbo.config.spring.util.AotWithSpringDetector;
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
 import org.apache.dubbo.config.spring.util.SpringCompatUtils;
 
@@ -214,7 +215,11 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
                 continue;
             }
 
+            // 会触发AnnotationConfigUtils
             // Registers @Service Bean first
+            if(AotWithSpringDetector.useGeneratedArtifacts()){
+                scanner.setIncludeAnnotationConfig(false);
+            }
             scanner.scan(packageToScan);
 
             // Finds all BeanDefinitionHolders of @Service whether @ComponentScan scans or not.
@@ -262,7 +267,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         BeanNameGenerator beanNameGenerator = null;
 
         if (registry instanceof SingletonBeanRegistry) {
-            SingletonBeanRegistry singletonBeanRegistry = SingletonBeanRegistry.class.cast(registry);
+            SingletonBeanRegistry singletonBeanRegistry = (SingletonBeanRegistry) registry;
             beanNameGenerator = (BeanNameGenerator) singletonBeanRegistry.getSingleton(CONFIGURATION_BEAN_NAME_GENERATOR);
         }
 

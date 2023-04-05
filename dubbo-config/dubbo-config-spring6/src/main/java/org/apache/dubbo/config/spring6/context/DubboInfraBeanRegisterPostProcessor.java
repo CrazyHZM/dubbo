@@ -14,26 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context;
+package org.apache.dubbo.config.spring6.context;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
-import org.apache.dubbo.config.spring.extension.SpringExtensionInjector;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
-import org.apache.dubbo.config.spring.util.EnvironmentUtils;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.config.spring6.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.env.ConfigurableEnvironment;
-
-import java.util.SortedMap;
 
 
 /**
@@ -42,7 +32,7 @@ import java.util.SortedMap;
  * in order to enable the registered BeanFactoryPostProcessor bean to be loaded and executed.
  *
  * @see org.springframework.context.support.PostProcessorRegistrationDelegate#invokeBeanFactoryPostProcessors(
- *org.springframework.beans.factory.config.ConfigurableListableBeanFactory, java.util.List)
+ *ConfigurableListableBeanFactory, java.util.List)
  */
 public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegistryPostProcessor {
 
@@ -65,21 +55,21 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 
         // In Spring 3.2.x, registry may be null because do not call postProcessBeanDefinitionRegistry method before postProcessBeanFactory
-        if (registry != null) {
-            // register ReferenceAnnotationBeanPostProcessor early before PropertySourcesPlaceholderConfigurer/PropertyPlaceholderConfigurer
-            // for processing early init ReferenceBean
-            ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor = beanFactory.getBean(
-                ReferenceAnnotationBeanPostProcessor.BEAN_NAME, ReferenceAnnotationBeanPostProcessor.class);
-            beanFactory.addBeanPostProcessor(referenceAnnotationBeanPostProcessor);
-
-            // register PropertySourcesPlaceholderConfigurer bean if not exits
-            DubboBeanUtils.registerPlaceholderConfigurerBeanIfNotExists(beanFactory, registry);
-        }
-
-        // fix https://github.com/apache/dubbo/issues/10278
-        if (registry != null) {
-            registry.removeBeanDefinition(BEAN_NAME);
-        }
+//        if (registry != null) {
+//            // register ReferenceAnnotationBeanPostProcessor early before PropertySourcesPlaceholderConfigurer/PropertyPlaceholderConfigurer
+//            // for processing early init ReferenceBean
+//            ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor = beanFactory.getBean(
+//                ReferenceAnnotationBeanPostProcessor.class.getName(), ReferenceAnnotationBeanPostProcessor.class);
+//            beanFactory.addBeanPostProcessor(referenceAnnotationBeanPostProcessor);
+//
+//            // register PropertySourcesPlaceholderConfigurer bean if not exits
+//            DubboBeanUtils.registerPlaceholderConfigurerBeanIfNotExists(beanFactory, registry);
+//        }
+//
+//        // fix https://github.com/apache/dubbo/issues/10278
+//        if (registry != null) {
+//            registry.removeBeanDefinition(BEAN_NAME);
+//        }
     }
 
 }

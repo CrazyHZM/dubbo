@@ -25,6 +25,7 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.NativeDetector;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
@@ -47,7 +48,6 @@ import java.util.stream.Collectors;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.NATIVE;
 import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
@@ -292,8 +292,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * @return
      */
     protected String[] methods(Class<?> interfaceClass) {
-        boolean isNative = getEnvironment().getConfiguration().getBoolean(NATIVE, false);
-        if (isNative) {
+        if (NativeDetector.inNativeImage()) {
             return Arrays.stream(interfaceClass.getMethods()).map(Method::getName).toArray(String[]::new);
         } else {
             return ClassUtils.getMethodNames(interfaceClass);
@@ -591,6 +590,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public String getProxy() {
+        if (NativeDetector.inNativeImage()){
+            return "jdk";
+        }
         return proxy;
     }
 

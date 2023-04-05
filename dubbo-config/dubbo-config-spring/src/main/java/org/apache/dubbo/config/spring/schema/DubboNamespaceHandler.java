@@ -17,6 +17,8 @@
 package org.apache.dubbo.config.spring.schema;
 
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
@@ -33,6 +35,7 @@ import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.beans.factory.config.ConfigurableSourceBeanMetadataElement;
 import org.apache.dubbo.config.spring.context.DubboSpringInitializer;
 
+import org.apache.dubbo.config.spring.util.AotWithSpringDetector;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
@@ -46,6 +49,8 @@ import org.w3c.dom.Element;
  * @export
  */
 public class DubboNamespaceHandler extends NamespaceHandlerSupport implements ConfigurableSourceBeanMetadataElement {
+
+    private final static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboNamespaceHandler.class);
 
     static {
         Version.checkDuplicate(DubboNamespaceHandler.class);
@@ -98,6 +103,9 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport implements Co
      * @since 2.7.5
      */
     private void registerAnnotationConfigProcessors(BeanDefinitionRegistry registry) {
-        AnnotationConfigUtils.registerAnnotationConfigProcessors(registry);
+        if (!AotWithSpringDetector.useGeneratedArtifacts()) {
+            logger.info("register annotation config processors");
+            AnnotationConfigUtils.registerAnnotationConfigProcessors(registry);
+        }
     }
 }

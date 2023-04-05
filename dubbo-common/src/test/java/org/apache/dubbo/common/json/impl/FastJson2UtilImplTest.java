@@ -29,7 +29,7 @@ import java.lang.reflect.Type;
 
 import static org.mockito.Answers.CALLS_REAL_METHODS;
 
-class FastJson2ImplTest {
+class FastJson2UtilImplTest {
     private static MockedStatic<JSON> fastjson2Mock;
 
     @BeforeAll

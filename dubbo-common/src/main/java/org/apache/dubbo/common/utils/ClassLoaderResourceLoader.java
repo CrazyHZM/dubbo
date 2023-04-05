@@ -78,7 +78,7 @@ public class ClassLoaderResourceLoader {
             Enumeration<URL> urls;
             try {
                 urls = currentClassLoader.getResources(fileName);
-                boolean isNative = NativeUtils.isNative();
+                boolean isNative = NativeDetector.inNativeImage();
                 if (urls != null) {
                     while (urls.hasMoreElements()) {
                         URL url = urls.nextElement();

@@ -1,3 +1,0 @@
-org.springframework.aot.hint.RuntimeHintsRegistrar= \
-org.apache.dubbo.config.spring6.beans.factory.annotation.TestRuntimeHints
-

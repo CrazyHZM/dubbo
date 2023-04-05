@@ -33,6 +33,8 @@ import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanSupport;
 import org.apache.dubbo.config.spring.util.SpringCompatUtils;
+import org.apache.dubbo.config.spring6.beans.factory.aot.ReferencedFieldValueResolver;
+import org.apache.dubbo.config.spring6.beans.factory.aot.ReferencedMethodArgumentsResolver;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.springframework.aot.generate.AccessControl;
 import org.springframework.aot.generate.GeneratedClass;
@@ -40,20 +42,17 @@ import org.springframework.aot.generate.GeneratedMethod;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.ExecutableMode;
 import org.springframework.aot.hint.RuntimeHints;
-import org.springframework.aot.hint.support.ClassHintUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
-import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.beans.factory.aot.AutowiredArgumentsCodeGenerator;
-import org.springframework.beans.factory.aot.AutowiredFieldValueResolver;
-import org.springframework.beans.factory.aot.AutowiredMethodArgumentsResolver;
 import org.springframework.beans.factory.aot.BeanRegistrationAotContribution;
 import org.springframework.beans.factory.aot.BeanRegistrationAotProcessor;
 import org.springframework.beans.factory.aot.BeanRegistrationCode;
+import org.springframework.beans.factory.aot.BeanRegistrationCodeFragments;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -61,7 +60,6 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.support.AbstractBeanFactory;
-import org.springframework.beans.factory.support.AutowireCandidateResolver;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.beans.factory.support.RegisteredBean;
@@ -75,7 +73,6 @@ import org.springframework.javapoet.ClassName;
 import org.springframework.javapoet.CodeBlock;
 import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
@@ -120,7 +117,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
     /**
      * The bean name of {@link ReferenceAnnotationBeanPostProcessor}
      */
-    public static final String BEAN_NAME = "referenceAnnotationBeanPostProcessor";
+    public static final String BEAN_NAME = ReferenceAnnotationBeanPostProcessor.class.getName();
 
     /**
      * Cache size
@@ -183,17 +180,17 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
             }
         }
 
-        if (beanFactory instanceof AbstractBeanFactory) {
-            List<BeanPostProcessor> beanPostProcessors = ((AbstractBeanFactory) beanFactory).getBeanPostProcessors();
-            for (BeanPostProcessor beanPostProcessor : beanPostProcessors) {
-                if (beanPostProcessor == this) {
-                    // This bean has been registered as BeanPostProcessor at org.apache.dubbo.config.spring.context.DubboInfraBeanRegisterPostProcessor.postProcessBeanFactory()
-                    // so destroy this bean here, prevent register it as BeanPostProcessor again, avoid cause BeanPostProcessorChecker detection error
-                    beanDefinitionRegistry.removeBeanDefinition(BEAN_NAME);
-                    break;
-                }
-            }
-        }
+//        if (beanFactory instanceof AbstractBeanFactory) {
+//            List<BeanPostProcessor> beanPostProcessors = ((AbstractBeanFactory) beanFactory).getBeanPostProcessors();
+//            for (BeanPostProcessor beanPostProcessor : beanPostProcessors) {
+//                if (beanPostProcessor == this) {
+//                    // This bean has been registered as BeanPostProcessor at org.apache.dubbo.config.spring.context.DubboInfraBeanRegisterPostProcessor.postProcessBeanFactory()
+//                    // so destroy this bean here, prevent register it as BeanPostProcessor again, avoid cause BeanPostProcessorChecker detection error
+//                    beanDefinitionRegistry.removeBeanDefinition(BEAN_NAME);
+//                    break;
+//                }
+//            }
+//        }
 
         try {
             // this is an early event, it will be notified at org.springframework.context.support.AbstractApplicationContext.registerListeners()
@@ -340,6 +337,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
      * Alternatives to the {@link #postProcessProperties(PropertyValues, Object, String)}, that removed as of Spring
      * Framework 6.0.0, and in favor of {@link #postProcessProperties(PropertyValues, Object, String)}.
      * <p>In order to be compatible with the lower version of Spring, it is still retained.
+     *
      * @see #postProcessProperties
      */
     public PropertyValues postProcessPropertyValues(
@@ -349,6 +347,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
     /**
      * Alternatives to the {@link #postProcessPropertyValues(PropertyValues, PropertyDescriptor[], Object, String)}.
+     *
      * @see #postProcessPropertyValues
      */
     @Override
@@ -377,20 +376,15 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         Class<?> beanClass = registeredBean.getBeanClass();
         String beanName = registeredBean.getBeanName();
         RootBeanDefinition beanDefinition = registeredBean.getMergedBeanDefinition();
-        InjectionMetadata metadata = findInjectionMetadata(beanDefinition, beanClass, beanName);
-        Collection<AnnotatedInjectElement> injectedElements = getAnnotatedInjectElements(metadata);
-        if (!CollectionUtils.isEmpty(injectedElements)) {
-            return new AotContribution(beanClass, injectedElements);
+        AnnotatedInjectionMetadata metadata = findInjectionMetadata(beanDefinition, beanClass, beanName);
+        if (!CollectionUtils.isEmpty(metadata.getFieldElements()) || !CollectionUtils.isEmpty(metadata.getMethodElements())) {
+            return new AotContribution(beanClass, metadata);
         }
         return null;
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    private Collection<AnnotatedInjectElement> getAnnotatedInjectElements(InjectionMetadata metadata) {
-        return (Collection) metadata.getInjectedElements();
-    }
-    private InjectionMetadata findInjectionMetadata(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
-        InjectionMetadata metadata = findInjectionMetadata(beanName, beanType, null);
+    private AnnotatedInjectionMetadata findInjectionMetadata(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+        AnnotatedInjectionMetadata metadata = findInjectionMetadata(beanName, beanType, null);
         metadata.checkConfigMembers(beanDefinition);
         return metadata;
     }
@@ -467,7 +461,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         boolean isContains;
         if ((isContains = beanDefinitionRegistry.containsBeanDefinition(referenceBeanName)) || beanDefinitionRegistry.isAlias(referenceBeanName)) {
             String preReferenceBeanName = referenceBeanName;
-            if (!isContains){
+            if (!isContains) {
                 // Look in the alias for the origin bean name
                 String[] aliases = beanDefinitionRegistry.getAliases(referenceBeanName);
                 if (ArrayUtils.isNotEmpty(aliases)) {
@@ -546,7 +540,9 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         beanDefinition.setAttribute(Constants.REFERENCE_PROPS, attributes);
         beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_CLASS, interfaceClass);
         beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_NAME, interfaceName);
-
+//        beanDefinition.getPropertyValues().add(Constants.REFERENCE_PROPS,attributes);
+        beanDefinition.getPropertyValues().add(ReferenceAttributes.INTERFACE_CLASS,interfaceClass);
+        beanDefinition.getPropertyValues().add(ReferenceAttributes.INTERFACE_NAME,interfaceName);
         // create decorated definition for reference bean, Avoid being instantiated when getting the beanType of ReferenceBean
         // see org.springframework.beans.factory.support.AbstractBeanFactory#getTypeForFactoryBean()
         GenericBeanDefinition targetDefinition = new GenericBeanDefinition();
@@ -634,27 +630,27 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
         private final Class<?> target;
 
-        private final Collection<AnnotatedInjectElement> autowiredElements;
+        private final AnnotatedInjectionMetadata annotatedInjectionMetadata;
 
 //        @Nullable
 //        private final AutowireCandidateResolver candidateResolver;
 
-        AotContribution(Class<?> target, Collection<AnnotatedInjectElement> autowiredElements) {
+        AotContribution(Class<?> target, AnnotatedInjectionMetadata annotatedInjectionMetadata) {
 
             this.target = target;
-            this.autowiredElements = autowiredElements;
+            this.annotatedInjectionMetadata = annotatedInjectionMetadata;
 //            this.candidateResolver = candidateResolver;
         }
 
         @Override
         public void applyTo(GenerationContext generationContext, BeanRegistrationCode beanRegistrationCode) {
             GeneratedClass generatedClass = generationContext.getGeneratedClasses()
-                .addForFeatureComponent("Autowiring", this.target, type -> {
-                    type.addJavadoc("Autowiring for {@link $T}.", this.target);
+                .addForFeatureComponent("DubboReference", this.target, type -> {
+                    type.addJavadoc("DubboReference for {@link $T}.", this.target);
                     type.addModifiers(javax.lang.model.element.Modifier.PUBLIC);
                 });
             GeneratedMethod generateMethod = generatedClass.getMethods().add("apply", method -> {
-                method.addJavadoc("Apply the autowiring.");
+                method.addJavadoc("Apply the dubbo reference.");
                 method.addModifiers(javax.lang.model.element.Modifier.PUBLIC,
                     javax.lang.model.element.Modifier.STATIC);
                 method.addParameter(RegisteredBean.class, REGISTERED_BEAN_PARAMETER);
@@ -672,73 +668,82 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
         private CodeBlock generateMethodCode(ClassName targetClassName, RuntimeHints hints) {
             CodeBlock.Builder code = CodeBlock.builder();
-            for (AnnotatedInjectElement autowiredElement : this.autowiredElements) {
-//                code.addStatement(generateMethodStatementForElement(
-//                    targetClassName, autowiredElement, hints));
+            if (!CollectionUtils.isEmpty(this.annotatedInjectionMetadata.getFieldElements())) {
+                for (AnnotatedInjectElement referenceElement : this.annotatedInjectionMetadata.getFieldElements()) {
+                    code.addStatement(generateMethodStatementForElement(
+                        targetClassName, referenceElement, hints));
+                }
+            }
+            if (!CollectionUtils.isEmpty(this.annotatedInjectionMetadata.getMethodElements())) {
+                for (AnnotatedInjectElement referenceElement : this.annotatedInjectionMetadata.getMethodElements()) {
+                    code.addStatement(generateMethodStatementForElement(
+                        targetClassName, referenceElement, hints));
+                }
             }
             code.addStatement("return $L", INSTANCE_PARAMETER);
             return code.build();
         }
 
-//        private CodeBlock generateMethodStatementForElement(ClassName targetClassName,
-//                                                            AnnotatedInjectElement autowiredElement, RuntimeHints hints) {
-//
-//            Member member = autowiredElement.getMember();
-//            boolean required = autowiredElement.required;
-//            if (member instanceof Field field) {
-//                return generateMethodStatementForField(
-//                    targetClassName, field, required, hints);
-//            }
-//            if (member instanceof Method method) {
-//                return generateMethodStatementForMethod(
-//                    targetClassName, method, required, hints);
-//            }
-//            throw new IllegalStateException(
-//                "Unsupported member type " + member.getClass().getName());
-//        }
+        private CodeBlock generateMethodStatementForElement(ClassName targetClassName,
+                                                            AnnotatedInjectElement referenceElement, RuntimeHints hints) {
 
-//        private CodeBlock generateMethodStatementForField(ClassName targetClassName,
-//                                                          Field field, boolean required, RuntimeHints hints) {
-//
-//            hints.reflection().registerField(field);
-//            CodeBlock resolver = CodeBlock.of("$T.$L($S)",
-//                AutowiredFieldValueResolver.class,
-//                (!required) ? "forField" : "forRequiredField", field.getName());
-//            AccessControl accessControl = AccessControl.forMember(field);
-//            if (!accessControl.isAccessibleFrom(targetClassName)) {
-//                return CodeBlock.of("$L.resolveAndSet($L, $L)", resolver,
-//                    REGISTERED_BEAN_PARAMETER, INSTANCE_PARAMETER);
-//            }
-//            return CodeBlock.of("$L.$L = $L.resolve($L)", INSTANCE_PARAMETER,
-//                field.getName(), resolver, REGISTERED_BEAN_PARAMETER);
-//        }
+            Member member = referenceElement.getMember();
+            AnnotationAttributes attributes = referenceElement.attributes;
+            Object injectedObject = referenceElement.injectedObject;
+            if (member instanceof Field) {
+                return generateMethodStatementForField(
+                    targetClassName, (Field) member, attributes, injectedObject, hints);
+            }
+            if (member instanceof Method) {
+                return generateMethodStatementForMethod(
+                    targetClassName, (Method) member, attributes, injectedObject, hints);
+            }
+            throw new IllegalStateException(
+                "Unsupported member type " + member.getClass().getName());
+        }
 
-//        private CodeBlock generateMethodStatementForMethod(ClassName targetClassName,
-//                                                           Method method, boolean required, RuntimeHints hints) {
-//
-//            CodeBlock.Builder code = CodeBlock.builder();
-//            code.add("$T.$L", AutowiredMethodArgumentsResolver.class,
-//                (!required) ? "forMethod" : "forRequiredMethod");
-//            code.add("($S", method.getName());
-//            if (method.getParameterCount() > 0) {
-//                code.add(", $L", generateParameterTypesCode(method.getParameterTypes()));
-//            }
-//            code.add(")");
-//            AccessControl accessControl = AccessControl.forMember(method);
-//            if (!accessControl.isAccessibleFrom(targetClassName)) {
-//                hints.reflection().registerMethod(method, ExecutableMode.INVOKE);
-//                code.add(".resolveAndInvoke($L, $L)", REGISTERED_BEAN_PARAMETER, INSTANCE_PARAMETER);
-//            }
-//            else {
-//                hints.reflection().registerMethod(method, ExecutableMode.INTROSPECT);
-//                CodeBlock arguments = new AutowiredArgumentsCodeGenerator(this.target,
-//                    method).generateCode(method.getParameterTypes());
-//                CodeBlock injectionCode = CodeBlock.of("args -> $L.$L($L)",
-//                    INSTANCE_PARAMETER, method.getName(), arguments);
-//                code.add(".resolve($L, $L)", REGISTERED_BEAN_PARAMETER, injectionCode);
-//            }
-//            return code.build();
-//        }
+        private CodeBlock generateMethodStatementForField(ClassName targetClassName,
+                                                          Field field, AnnotationAttributes attributes, Object injectedObject, RuntimeHints hints) {
+
+            hints.reflection().registerField(field);
+            CodeBlock resolver = CodeBlock.of("$T.$L($S)",
+                ReferencedFieldValueResolver.class,
+                "forRequiredField", field.getName());
+            CodeBlock shortcutResolver = CodeBlock.of("$L.withShortcut($S)", resolver, injectedObject);
+            AccessControl accessControl = AccessControl.forMember(field);
+
+            if (!accessControl.isAccessibleFrom(targetClassName)) {
+                return CodeBlock.of("$L.resolveAndSet($L, $L)", shortcutResolver,
+                    REGISTERED_BEAN_PARAMETER, INSTANCE_PARAMETER);
+            }
+            return CodeBlock.of("$L.$L = $L.resolve($L)", INSTANCE_PARAMETER,
+                field.getName(), shortcutResolver, REGISTERED_BEAN_PARAMETER);
+        }
+
+        private CodeBlock generateMethodStatementForMethod(ClassName targetClassName,
+                                                           Method method, AnnotationAttributes attributes, Object injectedObject, RuntimeHints hints) {
+
+            CodeBlock.Builder code = CodeBlock.builder();
+            code.add("$T.$L", ReferencedMethodArgumentsResolver.class, "forRequiredMethod");
+            code.add("($S", method.getName());
+            if (method.getParameterCount() > 0) {
+                code.add(", $L", generateParameterTypesCode(method.getParameterTypes()));
+            }
+            code.add(")");
+            AccessControl accessControl = AccessControl.forMember(method);
+            if (!accessControl.isAccessibleFrom(targetClassName)) {
+                hints.reflection().registerMethod(method, ExecutableMode.INVOKE);
+                code.add(".resolveAndInvoke($L, $L)", REGISTERED_BEAN_PARAMETER, INSTANCE_PARAMETER);
+            } else {
+                hints.reflection().registerMethod(method, ExecutableMode.INTROSPECT);
+                CodeBlock arguments = new AutowiredArgumentsCodeGenerator(this.target,
+                    method).generateCode(method.getParameterTypes());
+                CodeBlock injectionCode = CodeBlock.of("args -> $L.$L($L)",
+                    INSTANCE_PARAMETER, method.getName(), arguments);
+                code.add(".resolve($L, $L)", REGISTERED_BEAN_PARAMETER, injectionCode);
+            }
+            return code.build();
+        }
 
         private CodeBlock generateParameterTypesCode(Class<?>[] parameterTypes) {
             CodeBlock.Builder code = CodeBlock.builder();
@@ -750,25 +755,26 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         }
 
         private void registerHints(RuntimeHints runtimeHints) {
-//            this.autowiredElements.forEach(autowiredElement -> {
-//                boolean required = autowiredElement.required;
+//            this.referenceElements.forEach(autowiredElement -> {
 //                Member member = autowiredElement.getMember();
-//                if (member instanceof Field field) {
-//                    DependencyDescriptor dependencyDescriptor = new DependencyDescriptor(field, required);
-//                    registerProxyIfNecessary(runtimeHints, dependencyDescriptor);
+//                if (member instanceof Field) {
+//                    Field field = (Field) member;
+//                    DependencyDescriptor dependencyDescriptor = new DependencyDescriptor(field, true);
+////                    registerProxyIfNecessary(runtimeHints, dependencyDescriptor);
 //                }
-//                if (member instanceof Method method) {
+//                if (member instanceof Method) {
+//                    Method method = (Method) member;
 //                    Class<?>[] parameterTypes = method.getParameterTypes();
 //                    for (int i = 0; i < parameterTypes.length; i++) {
 //                        MethodParameter methodParam = new MethodParameter(method, i);
-//                        DependencyDescriptor dependencyDescriptor = new DependencyDescriptor(methodParam, required);
-//                        registerProxyIfNecessary(runtimeHints, dependencyDescriptor);
+//                        DependencyDescriptor dependencyDescriptor = new DependencyDescriptor(methodParam, true);
+////                        registerProxyIfNecessary(runtimeHints, dependencyDescriptor);
 //                    }
 //                }
 //            });
         }
 
-        private void registerProxyIfNecessary(RuntimeHints runtimeHints, DependencyDescriptor dependencyDescriptor) {
+//        private void registerProxyIfNecessary(RuntimeHints runtimeHints, DependencyDescriptor dependencyDescriptor) {
 //            if (this.candidateResolver != null) {
 //                Class<?> proxyClass =
 //                    this.candidateResolver.getLazyResolutionProxyClass(dependencyDescriptor, null);
@@ -776,7 +782,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 //                    ClassHintUtils.registerProxyIfNecessary(proxyClass, runtimeHints);
 //                }
 //            }
-        }
+//        }
 
     }
 }

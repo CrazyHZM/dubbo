@@ -21,6 +21,7 @@ import org.apache.dubbo.common.infra.InfraAdapter;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.NativeDetector;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -269,7 +270,7 @@ public class ApplicationConfig extends AbstractConfig {
             try {
                 hostname = InetAddress.getLocalHost().getHostName();
             } catch (UnknownHostException e) {
-                LOGGER.warn(COMMON_UNEXPECTED_EXCEPTION,"","","Failed to get the hostname of current instance.", e);
+                LOGGER.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "Failed to get the hostname of current instance.", e);
                 hostname = "UNKNOWN";
             }
         }
@@ -383,10 +384,16 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public String getCompiler() {
+        if (NativeDetector.inNativeImage()) {
+            return "jdk";
+        }
         return compiler;
     }
 
     public void setCompiler(String compiler) {
+        if (NativeDetector.inNativeImage()) {
+            compiler = "jdk";
+        }
         this.compiler = compiler;
         AdaptiveCompiler.setDefaultCompiler(compiler);
     }

@@ -368,6 +368,11 @@ public abstract class AbstractAnnotationBeanPostProcessor implements
             if (targetClass.isAssignableFrom(clazz) && clazz.getName().contains("$$EnhancerBySpringCGLIB$$")) {
                 return false;
             }
+
+            if (targetClass.isAssignableFrom(clazz) && clazz.getName().contains("$$SpringCGLIB$$")) {
+                return false;
+            }
+
             return true;
         }
     }
@@ -393,6 +398,7 @@ public abstract class AbstractAnnotationBeanPostProcessor implements
 
             Object injectedObject = getInjectedObject(attributes, bean, beanName, getInjectedType(), this);
 
+            System.out.println("AnnotatedInjectElement+" + injectedObject);
             if (member instanceof Field) {
                 Field field = (Field) member;
                 ReflectionUtils.makeAccessible(field);

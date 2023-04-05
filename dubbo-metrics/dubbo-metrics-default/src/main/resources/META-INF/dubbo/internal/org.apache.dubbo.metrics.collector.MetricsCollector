@@ -1,0 +1,5 @@
+default=org.apache.dubbo.metrics.collector.DefaultMetricsCollector
+registryMetricsCollector=org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector
+metadataMetricsCollector=org.apache.dubbo.metrics.metadata.collector.MetadataMetricsCollector
+aggregateMetricsCollector=org.apache.dubbo.metrics.collector.AggregateMetricsCollector
+configCenterMetricsCollector=org.apache.dubbo.metrics.collector.ConfigCenterMetricsCollector

@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.context;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.config.spring.util.AotWithSpringDetector;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -43,7 +44,7 @@ public class DubboSpringInitializer {
 
     private static final Map<BeanDefinitionRegistry, DubboSpringInitContext> contextMap = new ConcurrentHashMap<>();
 
-    private DubboSpringInitializer() {
+    public DubboSpringInitializer() {
     }
 
     public static void initialize(BeanDefinitionRegistry registry) {
@@ -53,6 +54,7 @@ public class DubboSpringInitializer {
             return;
         }
 
+        logger.info("prepare context and do customize");
         // prepare context and do customize
         DubboSpringInitContext context = contextMap.get(registry);
 
@@ -140,8 +142,10 @@ public class DubboSpringInitializer {
         context.markAsBound();
         moduleModel.setLifeCycleManagedExternally(true);
 
-        // register common beans
-        DubboBeanUtils.registerCommonBeans(registry);
+        if (!AotWithSpringDetector.useGeneratedArtifacts()){
+            // register common beans
+            DubboBeanUtils.registerCommonBeans(registry);
+        }
     }
 
     private static String safeGetModelDesc(ScopeModel scopeModel) {

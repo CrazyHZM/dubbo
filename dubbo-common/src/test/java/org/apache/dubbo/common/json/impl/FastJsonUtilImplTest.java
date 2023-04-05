@@ -29,7 +29,7 @@ import com.alibaba.fastjson.JSON;
 
 import static org.mockito.Answers.CALLS_REAL_METHODS;
 
-class FastJsonImplTest {
+class FastJsonUtilImplTest {
     private static MockedStatic<JSON> fastjsonMock;
 
     @BeforeAll
