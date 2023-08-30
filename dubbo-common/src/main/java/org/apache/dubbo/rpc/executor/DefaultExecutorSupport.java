@@ -33,5 +33,4 @@ public class DefaultExecutorSupport implements ExecutorSupport {
     public Executor getExecutor(Object data) {
         return executorRepository.getExecutor(url);
     }
-
 }

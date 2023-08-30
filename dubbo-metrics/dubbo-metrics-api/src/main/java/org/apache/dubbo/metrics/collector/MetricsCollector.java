@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.common.extension.SPI;
@@ -41,5 +40,4 @@ public interface MetricsCollector<E extends TimeCounterEvent> extends MetricsLif
      * @return List of MetricSample
      */
     List<MetricSample> collect();
-
 }

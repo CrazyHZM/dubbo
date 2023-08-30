@@ -66,4 +66,5 @@ public abstract class AbstractIsolationExecutorSupport implements ExecutorSuppor
             return null;
         }
         return frameworkServiceRepository.lookupExportedService(serviceKey.toString());
-    }}
+    }
+}

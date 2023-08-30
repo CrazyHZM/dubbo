@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.registry.collector;
 
 import org.apache.dubbo.common.extension.Activate;
@@ -35,7 +34,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 
 /**
  * Netty implementation of {@link MetricsCollector}
@@ -83,7 +81,6 @@ public class NettyMetricsCollector extends CombMetricsCollector<NettyEvent> {
         return Optional.ofNullable(collectEnabled).orElse(true);
     }
 
-
     @Override
     public List<MetricSample> collect() {
         List<MetricSample> list = new ArrayList<>();
@@ -93,5 +90,4 @@ public class NettyMetricsCollector extends CombMetricsCollector<NettyEvent> {
         list.addAll(super.export(MetricsCategory.NETTY));
         return list;
     }
-
 }

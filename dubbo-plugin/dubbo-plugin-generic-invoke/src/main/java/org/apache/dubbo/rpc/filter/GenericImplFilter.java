@@ -57,7 +57,8 @@ public class GenericImplFilter implements Filter, Filter.Listener {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(GenericImplFilter.class);
 
-    private static final Class<?>[] GENERIC_PARAMETER_TYPES = new Class<?>[]{String.class, String[].class, Object[].class};
+    private static final Class<?>[] GENERIC_PARAMETER_TYPES =
+            new Class<?>[] {String.class, String[].class, Object[].class};
 
     private static final String GENERIC_IMPL_MARKER = "GENERIC_IMPL";
 
@@ -106,7 +107,7 @@ public class GenericImplFilter implements Filter, Filter.Listener {
             }
             invocation2.setParameterTypes(GENERIC_PARAMETER_TYPES);
             invocation2.setParameterTypesDesc(GENERIC_PARAMETER_DESC);
-            invocation2.setArguments(new Object[]{methodName, types, args});
+            invocation2.setArguments(new Object[] {methodName, types, args});
             return invoker.invoke(invocation2);
         }
         // making a generic call to a normal service
@@ -123,19 +124,22 @@ public class GenericImplFilter implements Filter, Filter.Listener {
             } else if (ProtocolUtils.isBeanGenericSerialization(generic)) {
                 for (Object arg : args) {
                     if (arg != null && !(arg instanceof JavaBeanDescriptor)) {
-                        error(generic, JavaBeanDescriptor.class.getName(), arg.getClass().getName());
+                        error(
+                                generic,
+                                JavaBeanDescriptor.class.getName(),
+                                arg.getClass().getName());
                     }
                 }
             }
 
-            invocation.setAttachment(
-                GENERIC_KEY, invoker.getUrl().getParameter(GENERIC_KEY));
+            invocation.setAttachment(GENERIC_KEY, invoker.getUrl().getParameter(GENERIC_KEY));
         }
         return invoker.invoke(invocation);
     }
 
     private void error(String generic, String expected, String actual) throws RpcException {
-        throw new RpcException("Generic serialization [" + generic + "] only support message type " + expected + " and your message type is " + actual);
+        throw new RpcException("Generic serialization [" + generic + "] only support message type " + expected
+                + " and your message type is " + actual);
     }
 
     @Override
@@ -149,8 +153,9 @@ public class GenericImplFilter implements Filter, Filter.Listener {
                 Object value = appResponse.getValue();
                 try {
                     Class<?> invokerInterface = invoker.getInterface();
-                    if (!$INVOKE.equals(methodName) && !$INVOKE_ASYNC.equals(methodName)
-                        && invokerInterface.isAssignableFrom(GenericService.class)) {
+                    if (!$INVOKE.equals(methodName)
+                            && !$INVOKE_ASYNC.equals(methodName)
+                            && invokerInterface.isAssignableFrom(GenericService.class)) {
                         try {
                             // find the real interface from url
                             String realInterface = invoker.getUrl().getParameter(Constants.INTERFACE);
@@ -167,7 +172,9 @@ public class GenericImplFilter implements Filter, Filter.Listener {
                         } else if (value instanceof JavaBeanDescriptor) {
                             appResponse.setValue(JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) value));
                         } else {
-                            throw new RpcException("The type of result value is " + value.getClass().getName() + " other than " + JavaBeanDescriptor.class.getName() + ", and the result is " + value);
+                            throw new RpcException("The type of result value is "
+                                    + value.getClass().getName() + " other than " + JavaBeanDescriptor.class.getName()
+                                    + ", and the result is " + value);
                         }
                     } else {
                         Type[] types = ReflectUtils.getReturnTypes(method);
@@ -177,21 +184,28 @@ public class GenericImplFilter implements Filter, Filter.Listener {
                     throw new RpcException(e.getMessage(), e);
                 }
             } else if (appResponse.getException() instanceof com.alibaba.dubbo.rpc.service.GenericException) {
-                com.alibaba.dubbo.rpc.service.GenericException exception = (com.alibaba.dubbo.rpc.service.GenericException) appResponse.getException();
+                com.alibaba.dubbo.rpc.service.GenericException exception =
+                        (com.alibaba.dubbo.rpc.service.GenericException) appResponse.getException();
                 try {
                     String className = exception.getExceptionClass();
-                    DefaultSerializeClassChecker classChecker = moduleModel.getApplicationModel()
-                        .getFrameworkModel().getBeanFactory().getBean(DefaultSerializeClassChecker.class);
-                    Class<?> clazz = classChecker.loadClass(Thread.currentThread().getContextClassLoader(), className);
+                    DefaultSerializeClassChecker classChecker = moduleModel
+                            .getApplicationModel()
+                            .getFrameworkModel()
+                            .getBeanFactory()
+                            .getBean(DefaultSerializeClassChecker.class);
+                    Class<?> clazz =
+                            classChecker.loadClass(Thread.currentThread().getContextClassLoader(), className);
                     Throwable targetException = null;
                     Throwable lastException = null;
                     try {
-                        targetException = (Throwable) clazz.getDeclaredConstructor().newInstance();
+                        targetException =
+                                (Throwable) clazz.getDeclaredConstructor().newInstance();
                     } catch (Throwable e) {
                         lastException = e;
                         for (Constructor<?> constructor : clazz.getConstructors()) {
                             try {
-                                targetException = (Throwable) constructor.newInstance(new Object[constructor.getParameterTypes().length]);
+                                targetException = (Throwable)
+                                        constructor.newInstance(new Object[constructor.getParameterTypes().length]);
                                 break;
                             } catch (Throwable e1) {
                                 lastException = e1;
@@ -213,28 +227,29 @@ public class GenericImplFilter implements Filter, Filter.Listener {
                         throw lastException;
                     }
                 } catch (Throwable e) {
-                    throw new RpcException("Can not deserialize exception " + exception.getExceptionClass() + ", message: " + exception.getExceptionMessage(), e);
+                    throw new RpcException(
+                            "Can not deserialize exception " + exception.getExceptionClass() + ", message: "
+                                    + exception.getExceptionMessage(),
+                            e);
                 }
             }
         }
     }
 
     @Override
-    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-
-    }
+    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {}
 
     private boolean isCallingGenericImpl(String generic, Invocation invocation) {
         return ProtocolUtils.isGeneric(generic)
-            && (!$INVOKE.equals(invocation.getMethodName()) && !$INVOKE_ASYNC.equals(invocation.getMethodName()))
-            && invocation instanceof RpcInvocation;
+                && (!$INVOKE.equals(invocation.getMethodName()) && !$INVOKE_ASYNC.equals(invocation.getMethodName()))
+                && invocation instanceof RpcInvocation;
     }
 
     private boolean isMakingGenericCall(String generic, Invocation invocation) {
-        return (invocation.getMethodName().equals($INVOKE) || invocation.getMethodName().equals($INVOKE_ASYNC))
-            && invocation.getArguments() != null
-            && invocation.getArguments().length == 3
-            && ProtocolUtils.isGeneric(generic);
+        return (invocation.getMethodName().equals($INVOKE)
+                        || invocation.getMethodName().equals($INVOKE_ASYNC))
+                && invocation.getArguments() != null
+                && invocation.getArguments().length == 3
+                && ProtocolUtils.isGeneric(generic);
     }
-
 }

@@ -14,19 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.annotation;
 
 import org.apache.dubbo.annotation.util.FileUtils;
 import org.apache.dubbo.eci.extractor.JavassistUtils;
 
-import javassist.bytecode.ClassFile;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javassist.bytecode.ClassFile;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Real invocation test of DispatchingAnnotationProcessor (and DeprecatedHandler).
@@ -58,7 +57,8 @@ class RealInvocationTest {
             ClassFile classFile = JavassistUtils.openClassFile(classFilePath);
             List<String> stringItems = JavassistUtils.getConstPoolStringItems(classFile.getConstPool());
 
-            Assertions.assertEquals(i.getValue(), stringItems.contains("org/apache/dubbo/common/DeprecatedMethodInvocationCounter"));
+            Assertions.assertEquals(
+                    i.getValue(), stringItems.contains("org/apache/dubbo/common/DeprecatedMethodInvocationCounter"));
         }
     }
 }

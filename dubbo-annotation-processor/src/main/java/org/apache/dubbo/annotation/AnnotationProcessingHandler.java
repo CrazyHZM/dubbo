@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.annotation;
 
 import javax.lang.model.element.Element;
+
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
@@ -39,6 +39,5 @@ public interface AnnotationProcessingHandler {
      * @param elements the elements that annotated by the annotations of getAnnotationsToHandle()
      * @param annotationProcessorContext the annotation processor context object (Javac object encapsulation)
      */
-    void process(Set<Element> elements,
-                 AnnotationProcessorContext annotationProcessorContext);
+    void process(Set<Element> elements, AnnotationProcessorContext annotationProcessorContext);
 }

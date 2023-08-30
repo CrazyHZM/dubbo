@@ -14,15 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests of DeprecatedMethodInvocationCounter.
@@ -36,7 +35,8 @@ class DeprecatedMethodInvocationCounterTest {
         Assertions.assertFalse(DeprecatedMethodInvocationCounter.hasThisMethodInvoked(METHOD_DEFINITION));
 
         // Invoke a deprecated method.
-        URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path#index?version=1.0.0&id=org.apache.dubbo.config.RegistryConfig#0");
+        URL url = URL.valueOf(
+                "dubbo://admin:hello1234@10.20.130.230:20880/context/path#index?version=1.0.0&id=org.apache.dubbo.config.RegistryConfig#0");
 
         // Not a typo, intentionally invoke twice.
         invokeDeprecatedMethod(url);

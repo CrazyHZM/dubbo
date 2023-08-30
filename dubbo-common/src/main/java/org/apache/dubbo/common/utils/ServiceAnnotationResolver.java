@@ -45,7 +45,8 @@ public class ServiceAnnotationResolver {
      *
      * @since 2.7.9
      */
-    public static List<Class<? extends Annotation>> SERVICE_ANNOTATION_CLASSES = unmodifiableList(asList(DubboService.class, Service.class, com.alibaba.dubbo.config.annotation.Service.class));
+    public static List<Class<? extends Annotation>> SERVICE_ANNOTATION_CLASSES = unmodifiableList(
+            asList(DubboService.class, Service.class, com.alibaba.dubbo.config.annotation.Service.class));
 
     private final Annotation serviceAnnotation;
 
@@ -68,10 +69,9 @@ public class ServiceAnnotationResolver {
         }
 
         if (serviceAnnotation == null) {
-            throw new IllegalArgumentException(format("Any annotation of [%s] can't be annotated in the service type[%s].",
-                    SERVICE_ANNOTATION_CLASSES,
-                    serviceType.getName()
-            ));
+            throw new IllegalArgumentException(format(
+                    "Any annotation of [%s] can't be annotated in the service type[%s].",
+                    SERVICE_ANNOTATION_CLASSES, serviceType.getName()));
         }
 
         return serviceAnnotation;

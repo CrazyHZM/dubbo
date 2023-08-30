@@ -36,7 +36,10 @@ import static org.apache.dubbo.spring.security.utils.SecurityNames.CORE_JACKSON_
 import static org.apache.dubbo.spring.security.utils.SecurityNames.OBJECT_MAPPER_CLASS_NAME;
 import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_CONTEXT_HOLDER_CLASS_NAME;
 
-@Activate(group = CommonConstants.CONSUMER, order = -10000, onClass = {SECURITY_CONTEXT_HOLDER_CLASS_NAME, CORE_JACKSON_2_MODULE_CLASS_NAME, OBJECT_MAPPER_CLASS_NAME})
+@Activate(
+        group = CommonConstants.CONSUMER,
+        order = -10000,
+        onClass = {SECURITY_CONTEXT_HOLDER_CLASS_NAME, CORE_JACKSON_2_MODULE_CLASS_NAME, OBJECT_MAPPER_CLASS_NAME})
 public class ContextHolderAuthenticationPrepareFilter implements ClusterFilter {
 
     private final ObjectMapperCodec mapper;

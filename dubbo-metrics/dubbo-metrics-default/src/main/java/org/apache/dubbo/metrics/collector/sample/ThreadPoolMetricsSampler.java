@@ -23,12 +23,11 @@ import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
-import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.ThreadPoolMetric;
+import org.apache.dubbo.metrics.model.key.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +40,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
-
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
 import static org.apache.dubbo.config.Constants.CLIENT_THREAD_POOL_NAME;
 import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
@@ -62,9 +60,11 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
     }
 
     public void addExecutors(String name, ExecutorService executorService) {
-        Optional.ofNullable(executorService).filter(Objects::nonNull).filter(e -> e instanceof ThreadPoolExecutor)
-            .map(e -> (ThreadPoolExecutor) e)
-            .ifPresent(threadPoolExecutor -> sampleThreadPoolExecutor.put(name, threadPoolExecutor));
+        Optional.ofNullable(executorService)
+                .filter(Objects::nonNull)
+                .filter(e -> e instanceof ThreadPoolExecutor)
+                .map(e -> (ThreadPoolExecutor) e)
+                .ifPresent(threadPoolExecutor -> sampleThreadPoolExecutor.put(name, threadPoolExecutor));
     }
 
     @Override
@@ -80,16 +80,47 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
 
     private List<MetricSample> createMetricsSample(String name, ThreadPoolExecutor executor) {
         List<MetricSample> list = new ArrayList<>();
-        ThreadPoolMetric threadPoolMetric = ConcurrentHashMapUtils.computeIfAbsent(threadPoolMetricMap, name,
-            v -> new ThreadPoolMetric(collector.getApplicationName(), name, executor));
-        list.add(new GaugeMetricSample<>(MetricsKey.THREAD_POOL_CORE_SIZE, threadPoolMetric.getTags(), THREAD_POOL, threadPoolMetric, ThreadPoolMetric::getCorePoolSize));
-        list.add(new GaugeMetricSample<>(MetricsKey.THREAD_POOL_LARGEST_SIZE, threadPoolMetric.getTags(), THREAD_POOL, threadPoolMetric, ThreadPoolMetric::getLargestPoolSize));
-        list.add(new GaugeMetricSample<>(MetricsKey.THREAD_POOL_MAX_SIZE, threadPoolMetric.getTags(), THREAD_POOL, threadPoolMetric, ThreadPoolMetric::getMaximumPoolSize));
-        list.add(new GaugeMetricSample<>(MetricsKey.THREAD_POOL_ACTIVE_SIZE, threadPoolMetric.getTags(), THREAD_POOL, threadPoolMetric, ThreadPoolMetric::getActiveCount));
-        list.add(new GaugeMetricSample<>(MetricsKey.THREAD_POOL_THREAD_COUNT, threadPoolMetric.getTags(), THREAD_POOL, threadPoolMetric, ThreadPoolMetric::getPoolSize));
-        list.add(new GaugeMetricSample<>(MetricsKey.THREAD_POOL_QUEUE_SIZE, threadPoolMetric.getTags(), THREAD_POOL, threadPoolMetric, ThreadPoolMetric::getQueueSize));
+        ThreadPoolMetric threadPoolMetric = ConcurrentHashMapUtils.computeIfAbsent(
+                threadPoolMetricMap, name, v -> new ThreadPoolMetric(collector.getApplicationName(), name, executor));
+        list.add(new GaugeMetricSample<>(
+                MetricsKey.THREAD_POOL_CORE_SIZE,
+                threadPoolMetric.getTags(),
+                THREAD_POOL,
+                threadPoolMetric,
+                ThreadPoolMetric::getCorePoolSize));
+        list.add(new GaugeMetricSample<>(
+                MetricsKey.THREAD_POOL_LARGEST_SIZE,
+                threadPoolMetric.getTags(),
+                THREAD_POOL,
+                threadPoolMetric,
+                ThreadPoolMetric::getLargestPoolSize));
+        list.add(new GaugeMetricSample<>(
+                MetricsKey.THREAD_POOL_MAX_SIZE,
+                threadPoolMetric.getTags(),
+                THREAD_POOL,
+                threadPoolMetric,
+                ThreadPoolMetric::getMaximumPoolSize));
+        list.add(new GaugeMetricSample<>(
+                MetricsKey.THREAD_POOL_ACTIVE_SIZE,
+                threadPoolMetric.getTags(),
+                THREAD_POOL,
+                threadPoolMetric,
+                ThreadPoolMetric::getActiveCount));
+        list.add(new GaugeMetricSample<>(
+                MetricsKey.THREAD_POOL_THREAD_COUNT,
+                threadPoolMetric.getTags(),
+                THREAD_POOL,
+                threadPoolMetric,
+                ThreadPoolMetric::getPoolSize));
+        list.add(new GaugeMetricSample<>(
+                MetricsKey.THREAD_POOL_QUEUE_SIZE,
+                threadPoolMetric.getTags(),
+                THREAD_POOL,
+                threadPoolMetric,
+                ThreadPoolMetric::getQueueSize));
         return list;
     }
+
     public void registryDefaultSampleThreadPoolExecutor() {
         ApplicationModel applicationModel = collector.getApplicationModel();
         if (applicationModel == null) {
@@ -101,18 +132,26 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
     }
 
     private void addExecutorRejectMetrics() {
-        ThreadRejectMetricsCountSampler threadRejectMetricsCountSampler = new ThreadRejectMetricsCountSampler(collector);
-        this.sampleThreadPoolExecutor.entrySet().stream().filter(entry -> entry.getKey().startsWith(SERVER_THREAD_POOL_NAME)).forEach(entry -> {
-            if (entry.getValue().getRejectedExecutionHandler() instanceof AbortPolicyWithReport) {
-                MetricThreadPoolExhaustedListener metricThreadPoolExhaustedListener = new MetricThreadPoolExhaustedListener(entry.getKey(), threadRejectMetricsCountSampler);
-                ((AbortPolicyWithReport) entry.getValue().getRejectedExecutionHandler()).addThreadPoolExhaustedEventListener(metricThreadPoolExhaustedListener);
-            }
-        });
+        ThreadRejectMetricsCountSampler threadRejectMetricsCountSampler =
+                new ThreadRejectMetricsCountSampler(collector);
+        this.sampleThreadPoolExecutor.entrySet().stream()
+                .filter(entry -> entry.getKey().startsWith(SERVER_THREAD_POOL_NAME))
+                .forEach(entry -> {
+                    if (entry.getValue().getRejectedExecutionHandler() instanceof AbortPolicyWithReport) {
+                        MetricThreadPoolExhaustedListener metricThreadPoolExhaustedListener =
+                                new MetricThreadPoolExhaustedListener(entry.getKey(), threadRejectMetricsCountSampler);
+                        ((AbortPolicyWithReport) entry.getValue().getRejectedExecutionHandler())
+                                .addThreadPoolExhaustedEventListener(metricThreadPoolExhaustedListener);
+                    }
+                });
     }
 
     private void addRpcExecutors() {
         if (this.dataStore == null) {
-            this.dataStore = collector.getApplicationModel().getExtensionLoader(DataStore.class).getDefaultExtension();
+            this.dataStore = collector
+                    .getApplicationModel()
+                    .getExtensionLoader(DataStore.class)
+                    .getDefaultExtension();
         }
 
         if (dataStore != null) {
@@ -136,11 +175,15 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
     private void addFrameworkExecutors() {
         try {
             if (this.frameworkExecutorRepository == null) {
-                this.frameworkExecutorRepository = collector.getApplicationModel().getBeanFactory()
-                    .getBean(FrameworkExecutorRepository.class);
+                this.frameworkExecutorRepository =
+                        collector.getApplicationModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
             }
         } catch (Exception ex) {
-            logger.warn(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "ThreadPoolMetricsSampler! frameworkExecutorRepository non-init");
+            logger.warn(
+                    COMMON_METRICS_COLLECTOR_EXCEPTION,
+                    "",
+                    "",
+                    "ThreadPoolMetricsSampler! frameworkExecutorRepository non-init");
         }
         if (this.frameworkExecutorRepository == null) {
             return;
@@ -148,11 +191,12 @@ public class ThreadPoolMetricsSampler implements MetricsSampler {
         this.addExecutors("poolRouterExecutor", frameworkExecutorRepository.getPoolRouterExecutor());
         this.addExecutors("metadataRetryExecutor", frameworkExecutorRepository.getMetadataRetryExecutor());
         this.addExecutors("internalServiceExecutor", frameworkExecutorRepository.getInternalServiceExecutor());
-        this.addExecutors("connectivityScheduledExecutor", frameworkExecutorRepository.getConnectivityScheduledExecutor());
-        this.addExecutors("cacheRefreshingScheduledExecutor", frameworkExecutorRepository.getCacheRefreshingScheduledExecutor());
+        this.addExecutors(
+                "connectivityScheduledExecutor", frameworkExecutorRepository.getConnectivityScheduledExecutor());
+        this.addExecutors(
+                "cacheRefreshingScheduledExecutor", frameworkExecutorRepository.getCacheRefreshingScheduledExecutor());
         this.addExecutors("sharedExecutor", frameworkExecutorRepository.getSharedExecutor());
         this.addExecutors("sharedScheduledExecutor", frameworkExecutorRepository.getSharedScheduledExecutor());
         this.addExecutors("mappingRefreshingExecutor", frameworkExecutorRepository.getMappingRefreshingExecutor());
     }
 }
-

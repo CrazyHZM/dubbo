@@ -25,7 +25,6 @@ public interface JAXRSClassConstants extends RestMetadataConstants.JAX_RS {
      */
     Class PATH_ANNOTATION_CLASS = resolveClass(PATH_ANNOTATION_CLASS_NAME, getClassLoader());
 
-
     /**
      * The annotation class of @FormParam
      */
@@ -36,12 +35,10 @@ public interface JAXRSClassConstants extends RestMetadataConstants.JAX_RS {
      */
     Class HEADER_PARAM_ANNOTATION_CLASS = resolveClass(HEADER_PARAM_ANNOTATION_CLASS_NAME, getClassLoader());
 
-
     /**
      * The annotation class of @MatrixParam
      */
     Class MATRIX_PARAM_ANNOTATION_CLASS = resolveClass(MATRIX_PARAM_ANNOTATION_CLASS_NAME, getClassLoader());
-
 
     /**
      * The annotation class  of @QueryParam
@@ -57,6 +54,4 @@ public interface JAXRSClassConstants extends RestMetadataConstants.JAX_RS {
      * The annotation class of @PathParam
      */
     Class PATH_PARAM_ANNOTATION_CLASS = resolveClass(PATH_PARAM_ANNOTATION_CLASS_NAME, getClassLoader());
-
-
 }

@@ -47,6 +47,7 @@ public class TripleReflectionTypeDescriberRegistrar implements ReflectionTypeDes
     private TypeDescriber buildTypeDescriberWithPublicMethod(Class<?> c) {
         Set<MemberCategory> memberCategories = new HashSet<>();
         memberCategories.add(MemberCategory.INVOKE_PUBLIC_METHODS);
-        return new TypeDescriber(c.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
+        return new TypeDescriber(
+                c.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
     }
 }

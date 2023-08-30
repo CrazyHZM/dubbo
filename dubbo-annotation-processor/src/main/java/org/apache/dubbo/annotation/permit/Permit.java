@@ -1,32 +1,22 @@
 /*
- * Authored by Project Lombok and licensed by MIT License, which is attached below:
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Copyright (C) 2018-2021 The Project Lombok Authors.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package org.apache.dubbo.annotation.permit;
 
 import org.apache.dubbo.annotation.permit.dummy.Parent;
-
-import sun.misc.Unsafe;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
@@ -34,17 +24,20 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-// sunapi suppresses javac's warning about using Unsafe; 'all' suppresses eclipse's warning about the unspecified 'sunapi' key. Leave them both.
-// Yes, javac's definition of the word 'all' is quite contrary to what the dictionary says it means. 'all' does NOT include 'sunapi' according to javac.
+import sun.misc.Unsafe;
+
+// sunapi suppresses javac's warning about using Unsafe; 'all' suppresses eclipse's warning about the unspecified
+// 'sunapi' key. Leave them both.
+// Yes, javac's definition of the word 'all' is quite contrary to what the dictionary says it means. 'all' does NOT
+// include 'sunapi' according to javac.
 @SuppressWarnings({"sunapi", "all"})
 public class Permit {
-    private Permit() {
-    }
-
+    private Permit() {}
 
     private static final long ACCESSIBLE_OVERRIDE_FIELD_OFFSET;
     private static final IllegalAccessException INIT_ERROR;
-    private static final sun.misc.Unsafe UNSAFE = (sun.misc.Unsafe) reflectiveStaticFieldAccess(sun.misc.Unsafe.class, "theUnsafe");
+    private static final sun.misc.Unsafe UNSAFE =
+            (sun.misc.Unsafe) reflectiveStaticFieldAccess(sun.misc.Unsafe.class, "theUnsafe");
 
     static {
         Field f;
@@ -91,7 +84,8 @@ public class Permit {
         if (f != null) {
             return UNSAFE.objectFieldOffset(f);
         }
-        // The below seems very risky, but for all AccessibleObjects in java today it does work, and starting with JDK12, making the field accessible is no longer possible.
+        // The below seems very risky, but for all AccessibleObjects in java today it does work, and starting with
+        // JDK12, making the field accessible is no longer possible.
         try {
             return UNSAFE.objectFieldOffset(Fake.class.getDeclaredField("override"));
         } catch (Throwable t) {
@@ -161,7 +155,8 @@ public class Permit {
         }
     }
 
-    public static <T> Constructor<T> getConstructor(Class<T> c, Class<?>... parameterTypes) throws NoSuchMethodException {
+    public static <T> Constructor<T> getConstructor(Class<T> c, Class<?>... parameterTypes)
+            throws NoSuchMethodException {
         return setAccessible(c.getDeclaredConstructor(parameterTypes));
     }
 
@@ -182,7 +177,8 @@ public class Permit {
     public static void handleReflectionDebug(Throwable t, Throwable initError) {
         if (!isDebugReflection()) return;
 
-        System.err.println("** LOMBOK REFLECTION exception: " + t.getClass() + ": " + (t.getMessage() == null ? "(no message)" : t.getMessage()));
+        System.err.println("** LOMBOK REFLECTION exception: " + t.getClass() + ": "
+                + (t.getMessage() == null ? "(no message)" : t.getMessage()));
         t.printStackTrace(System.err);
         if (initError != null) {
             System.err.println("*** ADDITIONALLY, exception occurred setting up reflection: ");
@@ -190,11 +186,13 @@ public class Permit {
         }
     }
 
-    public static Object invoke(Method m, Object receiver, Object... args) throws IllegalAccessException, InvocationTargetException {
+    public static Object invoke(Method m, Object receiver, Object... args)
+            throws IllegalAccessException, InvocationTargetException {
         return invoke(null, m, receiver, args);
     }
 
-    public static Object invoke(Throwable initError, Method m, Object receiver, Object... args) throws IllegalAccessException, InvocationTargetException {
+    public static Object invoke(Throwable initError, Method m, Object receiver, Object... args)
+            throws IllegalAccessException, InvocationTargetException {
         try {
             return m.invoke(receiver, args);
         } catch (IllegalAccessException e) {
@@ -218,13 +216,13 @@ public class Permit {
             return m.invoke(receiver, args);
         } catch (NoClassDefFoundError e) {
             handleReflectionDebug(e, initError);
-            //ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
-            //do anything useful here.
+            // ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
+            // do anything useful here.
             return null;
         } catch (NullPointerException e) {
             handleReflectionDebug(e, initError);
-            //ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
-            //do anything useful here.
+            // ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
+            // do anything useful here.
             return null;
         } catch (IllegalAccessException e) {
             handleReflectionDebug(e, initError);
@@ -240,11 +238,13 @@ public class Permit {
         }
     }
 
-    public static <T> T newInstance(Constructor<T> c, Object... args) throws IllegalAccessException, InvocationTargetException, InstantiationException {
+    public static <T> T newInstance(Constructor<T> c, Object... args)
+            throws IllegalAccessException, InvocationTargetException, InstantiationException {
         return newInstance(null, c, args);
     }
 
-    public static <T> T newInstance(Throwable initError, Constructor<T> c, Object... args) throws IllegalAccessException, InvocationTargetException, InstantiationException {
+    public static <T> T newInstance(Throwable initError, Constructor<T> c, Object... args)
+            throws IllegalAccessException, InvocationTargetException, InstantiationException {
         try {
             return c.newInstance(args);
         } catch (IllegalAccessException e) {
@@ -271,13 +271,13 @@ public class Permit {
             return c.newInstance(args);
         } catch (NoClassDefFoundError e) {
             handleReflectionDebug(e, initError);
-            //ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
-            //do anything useful here.
+            // ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
+            // do anything useful here.
             return null;
         } catch (NullPointerException e) {
             handleReflectionDebug(e, initError);
-            //ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
-            //do anything useful here.
+            // ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
+            // do anything useful here.
             return null;
         } catch (IllegalAccessException e) {
             handleReflectionDebug(e, initError);
@@ -346,11 +346,11 @@ public class Permit {
     }
 
     private static Object getJdkCompilerModule() {
-		/* call public api: ModuleLayer.boot().findModule("jdk.compiler").get();
-		   but use reflection because we don't want this code to crash on jdk1.7 and below.
-		   In that case, none of this stuff was needed in the first place, so we just exit via
-		   the catch block and do nothing.
-		 */
+        /* call public api: ModuleLayer.boot().findModule("jdk.compiler").get();
+          but use reflection because we don't want this code to crash on jdk1.7 and below.
+          In that case, none of this stuff was needed in the first place, so we just exit via
+          the catch block and do nothing.
+        */
 
         try {
             Class<?> cModuleLayer = Class.forName("java.lang.ModuleLayer");
@@ -391,7 +391,7 @@ public class Permit {
         try {
             cModule = Class.forName("java.lang.Module");
         } catch (ClassNotFoundException e) {
-            return; //jdk8-; this is not needed.
+            return; // jdk8-; this is not needed.
         }
 
         Unsafe unsafe = UNSAFE;
@@ -417,13 +417,15 @@ public class Permit {
             long firstFieldOffset = getFirstFieldOffset(unsafe);
             unsafe.putBooleanVolatile(m, firstFieldOffset, true);
             for (String p : allPkgs) m.invoke(jdkCompilerModule, p, ownModule);
-        } catch (Exception ignore) {}
+        } catch (Exception ignore) {
+        }
 
         try {
             Method m = cModule.getDeclaredMethod("implAddExports", String.class, cModule);
             long firstFieldOffset = getFirstFieldOffset(unsafe);
             unsafe.putBooleanVolatile(m, firstFieldOffset, true);
             for (String p : allPkgs) m.invoke(jdkCompilerModule, p, ownModule);
-        } catch (Exception ignore) {}
+        } catch (Exception ignore) {
+        }
     }
 }

@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.spring.security.model;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
@@ -41,7 +40,9 @@ public class SecurityScopeModelInitializer implements ScopeModelInitializer {
 
         ObjectMapperCodec objectMapperCodec = beanFactory.getOrRegisterBean(ObjectMapperCodec.class);
 
-        Set<ObjectMapperCodecCustomer> objectMapperCodecCustomerList = frameworkModel.getExtensionLoader(ObjectMapperCodecCustomer.class).getSupportedExtensionInstances();
+        Set<ObjectMapperCodecCustomer> objectMapperCodecCustomerList = frameworkModel
+                .getExtensionLoader(ObjectMapperCodecCustomer.class)
+                .getSupportedExtensionInstances();
 
         for (ObjectMapperCodecCustomer objectMapperCodecCustomer : objectMapperCodecCustomerList) {
             objectMapperCodecCustomer.customize(objectMapperCodec);
@@ -49,13 +50,8 @@ public class SecurityScopeModelInitializer implements ScopeModelInitializer {
     }
 
     @Override
-    public void initializeApplicationModel(ApplicationModel applicationModel) {
-    }
+    public void initializeApplicationModel(ApplicationModel applicationModel) {}
 
     @Override
-    public void initializeModuleModel(ModuleModel moduleModel) {
-
-
-    }
-
+    public void initializeModuleModel(ModuleModel moduleModel) {}
 }

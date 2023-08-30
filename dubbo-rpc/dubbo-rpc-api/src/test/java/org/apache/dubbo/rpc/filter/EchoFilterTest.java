@@ -40,8 +40,8 @@ class EchoFilterTest {
     void testEcho() {
         Invocation invocation = mock(RpcInvocation.class);
         given(invocation.getMethodName()).willReturn("$echo");
-        given(invocation.getParameterTypes()).willReturn(new Class<?>[]{Enum.class});
-        given(invocation.getArguments()).willReturn(new Object[]{"hello"});
+        given(invocation.getParameterTypes()).willReturn(new Class<?>[] {Enum.class});
+        given(invocation.getArguments()).willReturn(new Object[] {"hello"});
         given(invocation.getObjectAttachments()).willReturn(null);
 
         Invoker<DemoService> invoker = mock(Invoker.class);
@@ -62,8 +62,8 @@ class EchoFilterTest {
     void testNonEcho() {
         Invocation invocation = mock(Invocation.class);
         given(invocation.getMethodName()).willReturn("echo");
-        given(invocation.getParameterTypes()).willReturn(new Class<?>[]{Enum.class});
-        given(invocation.getArguments()).willReturn(new Object[]{"hello"});
+        given(invocation.getParameterTypes()).willReturn(new Class<?>[] {Enum.class});
+        given(invocation.getArguments()).willReturn(new Object[] {"hello"});
         given(invocation.getObjectAttachments()).willReturn(null);
 
         Invoker<DemoService> invoker = mock(Invoker.class);

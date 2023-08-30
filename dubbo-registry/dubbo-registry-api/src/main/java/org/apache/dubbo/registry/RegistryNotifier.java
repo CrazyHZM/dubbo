@@ -52,8 +52,11 @@ public abstract class RegistryNotifier {
     public RegistryNotifier(URL registryUrl, long delayTime, ScheduledExecutorService scheduler) {
         this.delayTime = delayTime;
         if (scheduler == null) {
-            this.scheduler = registryUrl.getOrDefaultFrameworkModel().getBeanFactory()
-                .getBean(FrameworkExecutorRepository.class).getRegistryNotificationExecutor();
+            this.scheduler = registryUrl
+                    .getOrDefaultFrameworkModel()
+                    .getBeanFactory()
+                    .getBean(FrameworkExecutorRepository.class)
+                    .getRegistryNotificationExecutor();
         } else {
             this.scheduler = scheduler;
         }
@@ -124,5 +127,4 @@ public abstract class RegistryNotifier {
             }
         }
     }
-
 }

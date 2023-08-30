@@ -19,6 +19,7 @@ package org.apache.dubbo.validation.support.jvalidation.mock;
 import org.apache.dubbo.validation.MethodValidated;
 
 import javax.validation.constraints.NotNull;
+
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +36,5 @@ public interface JValidatorTestTarget {
 
     void someMethod5(Map<String, String> map);
 
-    @interface Test2 {
-    }
-
+    @interface Test2 {}
 }

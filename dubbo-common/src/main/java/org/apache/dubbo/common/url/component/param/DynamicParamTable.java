@@ -39,6 +39,7 @@ public final class DynamicParamTable {
      * Keys array, value is string
      */
     private static String[] ORIGIN_KEYS;
+
     private static ParamValue[] VALUES;
     private static final Map<String, Integer> KEY2INDEX = new HashMap<>(64);
 
@@ -89,8 +90,10 @@ public final class DynamicParamTable {
         keys.add("");
         values.add(new DynamicValues(null));
 
-        FrameworkModel.defaultModel().getExtensionLoader(DynamicParamSource.class)
-            .getSupportedExtensionInstances().forEach(source -> source.init(keys, values));
+        FrameworkModel.defaultModel()
+                .getExtensionLoader(DynamicParamSource.class)
+                .getSupportedExtensionInstances()
+                .forEach(source -> source.init(keys, values));
 
         TreeMap<String, ParamValue> resultMap = new TreeMap<>(Comparator.comparingInt(System::identityHashCode));
         for (int i = 0; i < keys.size(); i++) {
@@ -98,11 +101,10 @@ public final class DynamicParamTable {
         }
 
         // assume key is in constant pool, store identity hashCode as index
-        KEYS = resultMap.keySet()
-            .stream()
-            .map(System::identityHashCode)
-            .mapToInt(x -> x)
-            .toArray();
+        KEYS = resultMap.keySet().stream()
+                .map(System::identityHashCode)
+                .mapToInt(x -> x)
+                .toArray();
 
         ORIGIN_KEYS = resultMap.keySet().toArray(new String[0]);
 

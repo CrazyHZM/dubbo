@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
 import org.apache.dubbo.remoting.api.connection.ConnectionHandler;
@@ -38,7 +37,8 @@ public class TripleClientHandler extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof Http2GoAwayFrame) {
-            final ConnectionHandler connectionHandler = (ConnectionHandler) ctx.pipeline().get(CONNECTION_HANDLER_NAME);
+            final ConnectionHandler connectionHandler =
+                    (ConnectionHandler) ctx.pipeline().get(CONNECTION_HANDLER_NAME);
             connectionHandler.onGoAway(ctx.channel());
         }
         ReferenceCountUtil.release(msg);

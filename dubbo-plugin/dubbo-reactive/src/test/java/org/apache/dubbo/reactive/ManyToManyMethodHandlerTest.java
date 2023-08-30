@@ -14,20 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.reactive;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.reactive.handler.ManyToManyMethodHandler;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -44,15 +43,12 @@ public final class ManyToManyMethodHandlerTest {
         AtomicInteger completeCounter = new AtomicInteger();
         AtomicInteger errorCounter = new AtomicInteger();
         ServerCallToObserverAdapter<String> responseObserver = Mockito.mock(ServerCallToObserverAdapter.class);
-        doAnswer(o -> nextCounter.incrementAndGet())
-            .when(responseObserver).onNext(anyString());
-        doAnswer(o -> completeCounter.incrementAndGet())
-            .when(responseObserver).onCompleted();
-        doAnswer(o -> errorCounter.incrementAndGet())
-            .when(responseObserver).onError(any(Throwable.class));
-        ManyToManyMethodHandler<String, String> handler = new ManyToManyMethodHandler<>(requestFlux ->
-            requestFlux.map(r -> r + "0"));
-        CompletableFuture<StreamObserver<String>> future = handler.invoke(new Object[]{responseObserver});
+        doAnswer(o -> nextCounter.incrementAndGet()).when(responseObserver).onNext(anyString());
+        doAnswer(o -> completeCounter.incrementAndGet()).when(responseObserver).onCompleted();
+        doAnswer(o -> errorCounter.incrementAndGet()).when(responseObserver).onError(any(Throwable.class));
+        ManyToManyMethodHandler<String, String> handler =
+                new ManyToManyMethodHandler<>(requestFlux -> requestFlux.map(r -> r + "0"));
+        CompletableFuture<StreamObserver<String>> future = handler.invoke(new Object[] {responseObserver});
         StreamObserver<String> requestObserver = future.get();
         for (int i = 0; i < 10; i++) {
             requestObserver.onNext(String.valueOf(i));

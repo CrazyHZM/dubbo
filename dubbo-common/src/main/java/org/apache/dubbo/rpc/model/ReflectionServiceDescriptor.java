@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -40,7 +39,8 @@ public class ReflectionServiceDescriptor implements ServiceDescriptor {
     // to accelerate search
     private final Map<String, List<MethodDescriptor>> methods = new HashMap<>();
     private final Map<String, Map<String, MethodDescriptor>> descToMethods = new HashMap<>();
-    private final ConcurrentNavigableMap<String, FullServiceDefinition> serviceDefinitions = new ConcurrentSkipListMap<>();
+    private final ConcurrentNavigableMap<String, FullServiceDefinition> serviceDefinitions =
+            new ConcurrentSkipListMap<>();
 
     public ReflectionServiceDescriptor(String interfaceName, Class<?> interfaceClass) {
         this.interfaceName = interfaceName;
@@ -58,8 +58,9 @@ public class ReflectionServiceDescriptor implements ServiceDescriptor {
     }
 
     public FullServiceDefinition getFullServiceDefinition(String serviceKey) {
-        return serviceDefinitions.computeIfAbsent(serviceKey,
-            (k) -> ServiceDefinitionBuilder.buildFullDefinition(serviceInterfaceClass, Collections.emptyMap()));
+        return serviceDefinitions.computeIfAbsent(
+                serviceKey,
+                (k) -> ServiceDefinitionBuilder.buildFullDefinition(serviceInterfaceClass, Collections.emptyMap()));
     }
 
     private void initMethods() {
@@ -140,9 +141,10 @@ public class ReflectionServiceDescriptor implements ServiceDescriptor {
             return false;
         }
         ReflectionServiceDescriptor that = (ReflectionServiceDescriptor) o;
-        return Objects.equals(interfaceName, that.interfaceName) && Objects.equals(serviceInterfaceClass,
-            that.serviceInterfaceClass) && Objects.equals(methods, that.methods) && Objects.equals(descToMethods,
-            that.descToMethods);
+        return Objects.equals(interfaceName, that.interfaceName)
+                && Objects.equals(serviceInterfaceClass, that.serviceInterfaceClass)
+                && Objects.equals(methods, that.methods)
+                && Objects.equals(descToMethods, that.descToMethods);
     }
 
     @Override

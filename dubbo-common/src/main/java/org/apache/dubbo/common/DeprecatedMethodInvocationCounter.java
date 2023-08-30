@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.constants.DeprecatedMethodInvocationCounterConstants;
@@ -39,7 +38,8 @@ public final class DeprecatedMethodInvocationCounter {
 
     private static final ConcurrentHashMap<String, LongAdder> COUNTERS = new ConcurrentHashMap<>();
 
-    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(DeprecatedMethodInvocationCounter.class);
+    private static final ErrorTypeAwareLogger LOGGER =
+            LoggerFactory.getErrorTypeAwareLogger(DeprecatedMethodInvocationCounter.class);
 
     /**
      * Invoked by (modified) deprecated method.
@@ -49,11 +49,10 @@ public final class DeprecatedMethodInvocationCounter {
     public static void onDeprecatedMethodCalled(String methodDefinition) {
         if (!hasThisMethodInvoked(methodDefinition)) {
             LOGGER.warn(
-                DeprecatedMethodInvocationCounterConstants.ERROR_CODE,
-                DeprecatedMethodInvocationCounterConstants.POSSIBLE_CAUSE,
-                DeprecatedMethodInvocationCounterConstants.EXTENDED_MESSAGE,
-                DeprecatedMethodInvocationCounterConstants.LOGGER_MESSAGE_PREFIX + methodDefinition
-            );
+                    DeprecatedMethodInvocationCounterConstants.ERROR_CODE,
+                    DeprecatedMethodInvocationCounterConstants.POSSIBLE_CAUSE,
+                    DeprecatedMethodInvocationCounterConstants.EXTENDED_MESSAGE,
+                    DeprecatedMethodInvocationCounterConstants.LOGGER_MESSAGE_PREFIX + methodDefinition);
         }
 
         increaseInvocationCount(methodDefinition);

@@ -23,9 +23,9 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
-
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

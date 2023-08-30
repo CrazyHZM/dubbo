@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.common.extension;
 
 import org.junit.jupiter.api.Assertions;
@@ -27,13 +26,15 @@ class ExtensionTest {
     @Test
     void testExtensionFactory() {
         try {
-            ExtensionInjector myfactory = ExtensionLoader.getExtensionLoader(ExtensionInjector.class).getExtension("myfactory");
+            ExtensionInjector myfactory =
+                    ExtensionLoader.getExtensionLoader(ExtensionInjector.class).getExtension("myfactory");
             Assertions.assertTrue(myfactory instanceof ExtensionInjector);
             Assertions.assertTrue(myfactory instanceof ExtensionFactory);
             Assertions.assertTrue(myfactory instanceof com.alibaba.dubbo.common.extension.ExtensionFactory);
             Assertions.assertTrue(myfactory instanceof MyExtensionFactory);
 
-            ExtensionInjector spring = ExtensionLoader.getExtensionLoader(ExtensionInjector.class).getExtension("spring");
+            ExtensionInjector spring =
+                    ExtensionLoader.getExtensionLoader(ExtensionInjector.class).getExtension("spring");
             Assertions.assertTrue(spring instanceof ExtensionInjector);
             Assertions.assertFalse(spring instanceof ExtensionFactory);
             Assertions.assertFalse(spring instanceof com.alibaba.dubbo.common.extension.ExtensionFactory);

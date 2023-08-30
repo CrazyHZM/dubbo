@@ -65,8 +65,8 @@ public class WrapperComparator implements Comparator<Object> {
             info.order = activate.order();
         } else if (clazz.isAnnotationPresent(com.alibaba.dubbo.common.extension.Activate.class)) {
             // TODO: backward compatibility
-            com.alibaba.dubbo.common.extension.Activate activate = clazz.getAnnotation(
-                    com.alibaba.dubbo.common.extension.Activate.class);
+            com.alibaba.dubbo.common.extension.Activate activate =
+                    clazz.getAnnotation(com.alibaba.dubbo.common.extension.Activate.class);
             info.order = activate.order();
         } else if (clazz.isAnnotationPresent(Wrapper.class)) {
             Wrapper wrapper = clazz.getAnnotation(Wrapper.class);

@@ -14,13 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.aggregate;
+
+import java.util.concurrent.atomic.LongAdder;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.atomic.LongAdder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -42,18 +41,17 @@ class SlidingWindowTest {
 
     @Test
     void testCurrentPane() {
-        assertNull(window.currentPane(/* invalid time*/-1L));
+        assertNull(window.currentPane(/* invalid time*/ -1L));
         long timeInMs = System.currentTimeMillis();
         Pane<LongAdder> currentPane = window.currentPane(timeInMs);
         assertNotNull(currentPane);
         // reuse test
-        assertEquals(currentPane,
-            window.currentPane(1 + timeInMs + window.getPaneIntervalInMs() * paneCount));
+        assertEquals(currentPane, window.currentPane(1 + timeInMs + window.getPaneIntervalInMs() * paneCount));
     }
 
     @Test
     void testGetPaneData() {
-        assertNull(window.getPaneValue(/* invalid time*/-1L));
+        assertNull(window.getPaneValue(/* invalid time*/ -1L));
         window.currentPane();
         assertNotNull(window.getPaneValue(System.currentTimeMillis()));
         assertNull(window.getPaneValue(System.currentTimeMillis() + window.getPaneIntervalInMs()));

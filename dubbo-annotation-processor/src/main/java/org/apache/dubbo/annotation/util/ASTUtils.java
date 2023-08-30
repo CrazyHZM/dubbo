@@ -14,17 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.annotation.util;
 
 import org.apache.dubbo.annotation.AnnotationProcessorContext;
+
+import java.util.List;
 
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.ListBuffer;
-
-import java.util.List;
 
 /**
  * Some utils about AST manipulating.
@@ -35,16 +34,23 @@ public final class ASTUtils {
         throw new UnsupportedOperationException("No instance of 'ASTUtils' for you! ");
     }
 
-    public static void addImportStatement(AnnotationProcessorContext apContext,
-                                    Symbol.ClassSymbol classSymbol,
-                                    String packageName,
-                                    String className) {
+    public static void addImportStatement(
+            AnnotationProcessorContext apContext,
+            Symbol.ClassSymbol classSymbol,
+            String packageName,
+            String className) {
 
-        JCTree.JCImport jcImport = apContext.getTreeMaker().Import(
-            apContext.getTreeMaker().Select(
-                apContext.getTreeMaker().Ident(apContext.getNames().fromString(packageName)),
-                apContext.getNames().fromString(className)
-            ), false);
+        JCTree.JCImport jcImport = apContext
+                .getTreeMaker()
+                .Import(
+                        apContext
+                                .getTreeMaker()
+                                .Select(
+                                        apContext
+                                                .getTreeMaker()
+                                                .Ident(apContext.getNames().fromString(packageName)),
+                                        apContext.getNames().fromString(className)),
+                        false);
 
         TreePath treePath = apContext.getTrees().getPath(classSymbol);
         TreePath parentPath = treePath.getParentPath();
@@ -78,9 +84,8 @@ public final class ASTUtils {
      * @param originalMethodDecl the method declaration that will add logger statement
      * @param fullExpressionStatement the statement to insert.
      */
-    public static void insertStatementToHeadOfMethod(JCTree.JCBlock block,
-                                                     JCTree.JCMethodDecl originalMethodDecl,
-                                                     JCTree.JCStatement fullExpressionStatement) {
+    public static void insertStatementToHeadOfMethod(
+            JCTree.JCBlock block, JCTree.JCMethodDecl originalMethodDecl, JCTree.JCStatement fullExpressionStatement) {
 
         boolean isConstructor = originalMethodDecl.name.toString().equals("<init>");
         ListBuffer<JCTree.JCStatement> statements = new ListBuffer<>();

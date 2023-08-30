@@ -1,26 +1,18 @@
 /*
- * Copyright (c) 2004-2011 QOS.ch
- * All rights reserved.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free  of charge, to any person obtaining
- * a  copy  of this  software  and  associated  documentation files  (the
- * "Software"), to  deal in  the Software without  restriction, including
- * without limitation  the rights to  use, copy, modify,  merge, publish,
- * distribute,  sublicense, and/or sell  copies of  the Software,  and to
- * permit persons to whom the Software  is furnished to do so, subject to
- * the following conditions:
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * The  above  copyright  notice  and  this permission  notice  shall  be
- * included in all copies or substantial portions of the Software.
- *
- * THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
- * EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
- * MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.dubbo.common.logger.helpers;
 
@@ -97,7 +89,7 @@ import java.util.Map;
  * @author Ceki G&uuml;lc&uuml;
  * @author Joern Huxhorn
  */
-final public class MessageFormatter {
+public final class MessageFormatter {
     static final char DELIM_START = '{';
     static final char DELIM_STOP = '}';
     static final String DELIM_STR = "{}";
@@ -120,8 +112,8 @@ final public class MessageFormatter {
      * @param arg            The argument to be substituted in place of the formatting anchor
      * @return The formatted message
      */
-    final public static FormattingTuple format(String messagePattern, Object arg) {
-        return arrayFormat(messagePattern, new Object[]{arg});
+    public static final FormattingTuple format(String messagePattern, Object arg) {
+        return arrayFormat(messagePattern, new Object[] {arg});
     }
 
     /**
@@ -143,12 +135,11 @@ final public class MessageFormatter {
      *                       anchor
      * @return The formatted message
      */
-    final public static FormattingTuple format(final String messagePattern, Object arg1, Object arg2) {
-        return arrayFormat(messagePattern, new Object[]{arg1, arg2});
+    public static final FormattingTuple format(final String messagePattern, Object arg1, Object arg2) {
+        return arrayFormat(messagePattern, new Object[] {arg1, arg2});
     }
 
-
-    final public static FormattingTuple arrayFormat(final String messagePattern, final Object[] argArray) {
+    public static final FormattingTuple arrayFormat(final String messagePattern, final Object[] argArray) {
         Throwable throwableCandidate = MessageFormatter.getThrowableCandidate(argArray);
         Object[] args = argArray;
         if (throwableCandidate != null) {
@@ -157,7 +148,8 @@ final public class MessageFormatter {
         return arrayFormat(messagePattern, args, throwableCandidate);
     }
 
-    final public static FormattingTuple arrayFormat(final String messagePattern, final Object[] argArray, Throwable throwable) {
+    public static final FormattingTuple arrayFormat(
+            final String messagePattern, final Object[] argArray, Throwable throwable) {
 
         if (messagePattern == null) {
             return new FormattingTuple(null, argArray, throwable);
@@ -214,7 +206,7 @@ final public class MessageFormatter {
         return new FormattingTuple(sbuf.toString(), argArray, throwable);
     }
 
-    final static boolean isEscapedDelimeter(String messagePattern, int delimeterStartIndex) {
+    static final boolean isEscapedDelimeter(String messagePattern, int delimeterStartIndex) {
 
         if (delimeterStartIndex == 0) {
             return false;
@@ -227,7 +219,7 @@ final public class MessageFormatter {
         }
     }
 
-    final static boolean isDoubleEscaped(String messagePattern, int delimeterStartIndex) {
+    static final boolean isDoubleEscaped(String messagePattern, int delimeterStartIndex) {
         if (delimeterStartIndex >= 2 && messagePattern.charAt(delimeterStartIndex - 2) == ESCAPE_CHAR) {
             return true;
         } else {
@@ -273,7 +265,8 @@ final public class MessageFormatter {
             String oAsString = o.toString();
             sbuf.append(oAsString);
         } catch (Throwable t) {
-            System.err.println("SLF4J: Failed toString() invocation on an object of type [" + o.getClass().getName() + "]");
+            System.err.println("SLF4J: Failed toString() invocation on an object of type ["
+                    + o.getClass().getName() + "]");
             System.err.println("Reported exception:");
             StackTraceElement[] stackTrace = t.getStackTrace();
             StringBuilder stackBuilder = new StringBuilder();
@@ -283,7 +276,6 @@ final public class MessageFormatter {
             System.err.println(stackBuilder);
             sbuf.append("[FAILED toString()]");
         }
-
     }
 
     private static void objectArrayAppend(StringBuilder sbuf, Object[] a, Map<Object[], Object> seenMap) {
@@ -293,8 +285,7 @@ final public class MessageFormatter {
             final int len = a.length;
             for (int i = 0; i < len; i++) {
                 deeplyAppendParameter(sbuf, a[i], seenMap);
-                if (i != len - 1)
-                    sbuf.append(", ");
+                if (i != len - 1) sbuf.append(", ");
             }
             // allow repeats in siblings
             seenMap.remove(a);
@@ -309,8 +300,7 @@ final public class MessageFormatter {
         final int len = a.length;
         for (int i = 0; i < len; i++) {
             sbuf.append(a[i]);
-            if (i != len - 1)
-                sbuf.append(", ");
+            if (i != len - 1) sbuf.append(", ");
         }
         sbuf.append(']');
     }
@@ -320,8 +310,7 @@ final public class MessageFormatter {
         final int len = a.length;
         for (int i = 0; i < len; i++) {
             sbuf.append(a[i]);
-            if (i != len - 1)
-                sbuf.append(", ");
+            if (i != len - 1) sbuf.append(", ");
         }
         sbuf.append(']');
     }
@@ -331,8 +320,7 @@ final public class MessageFormatter {
         final int len = a.length;
         for (int i = 0; i < len; i++) {
             sbuf.append(a[i]);
-            if (i != len - 1)
-                sbuf.append(", ");
+            if (i != len - 1) sbuf.append(", ");
         }
         sbuf.append(']');
     }
@@ -342,8 +330,7 @@ final public class MessageFormatter {
         final int len = a.length;
         for (int i = 0; i < len; i++) {
             sbuf.append(a[i]);
-            if (i != len - 1)
-                sbuf.append(", ");
+            if (i != len - 1) sbuf.append(", ");
         }
         sbuf.append(']');
     }
@@ -353,8 +340,7 @@ final public class MessageFormatter {
         final int len = a.length;
         for (int i = 0; i < len; i++) {
             sbuf.append(a[i]);
-            if (i != len - 1)
-                sbuf.append(", ");
+            if (i != len - 1) sbuf.append(", ");
         }
         sbuf.append(']');
     }
@@ -364,8 +350,7 @@ final public class MessageFormatter {
         final int len = a.length;
         for (int i = 0; i < len; i++) {
             sbuf.append(a[i]);
-            if (i != len - 1)
-                sbuf.append(", ");
+            if (i != len - 1) sbuf.append(", ");
         }
         sbuf.append(']');
     }
@@ -375,8 +360,7 @@ final public class MessageFormatter {
         final int len = a.length;
         for (int i = 0; i < len; i++) {
             sbuf.append(a[i]);
-            if (i != len - 1)
-                sbuf.append(", ");
+            if (i != len - 1) sbuf.append(", ");
         }
         sbuf.append(']');
     }
@@ -386,8 +370,7 @@ final public class MessageFormatter {
         final int len = a.length;
         for (int i = 0; i < len; i++) {
             sbuf.append(a[i]);
-            if (i != len - 1)
-                sbuf.append(", ");
+            if (i != len - 1) sbuf.append(", ");
         }
         sbuf.append(']');
     }
@@ -433,5 +416,4 @@ final public class MessageFormatter {
 
         return trimmed;
     }
-
 }

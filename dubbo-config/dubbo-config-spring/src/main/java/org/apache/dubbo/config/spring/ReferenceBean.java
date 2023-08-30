@@ -36,6 +36,12 @@ import org.apache.dubbo.config.spring.util.LockUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.proxy.AbstractProxyFactory;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanNameAware;
@@ -48,14 +54,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_FAILED;
-
 
 /**
  * <p>
@@ -104,8 +103,13 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_FAILED
  * @see org.apache.dubbo.config.annotation.DubboReference
  * @see org.apache.dubbo.config.spring.reference.ReferenceBeanBuilder
  */
-public class ReferenceBean<T> implements FactoryBean<T>,
-    ApplicationContextAware, BeanClassLoaderAware, BeanNameAware, InitializingBean, DisposableBean {
+public class ReferenceBean<T>
+        implements FactoryBean<T>,
+                ApplicationContextAware,
+                BeanClassLoaderAware,
+                BeanNameAware,
+                InitializingBean,
+                DisposableBean {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
     private transient ApplicationContext applicationContext;
 
@@ -128,19 +132,20 @@ public class ReferenceBean<T> implements FactoryBean<T>,
     /*
      * remote service interface class name
      */
-    // 'interfaceName' field for compatible with seata-1.4.0: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc()
+    // 'interfaceName' field for compatible with seata-1.4.0:
+    // io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc()
     private String interfaceName;
 
     // proxy style
     private String proxy;
 
-    //from annotation attributes
+    // from annotation attributes
     private Map<String, Object> referenceProps;
 
-    //from xml bean definition
+    // from xml bean definition
     private MutablePropertyValues propertyValues;
 
-    //actual reference config
+    // actual reference config
     private ReferenceConfig referenceConfig;
 
     // Registration sources of this reference, may be xml file or annotation location
@@ -222,7 +227,8 @@ public class ReferenceBean<T> implements FactoryBean<T>,
         Assert.notEmptyString(getId(), "The id of ReferenceBean cannot be empty");
         BeanDefinition beanDefinition = beanFactory.getBeanDefinition(getId());
         if (AotWithSpringDetector.useGeneratedArtifacts()) {
-            this.interfaceClass = (Class<?>) beanDefinition.getPropertyValues().get(ReferenceAttributes.INTERFACE_CLASS);
+            this.interfaceClass =
+                    (Class<?>) beanDefinition.getPropertyValues().get(ReferenceAttributes.INTERFACE_CLASS);
             this.interfaceName = (String) beanDefinition.getPropertyValues().get(ReferenceAttributes.INTERFACE_NAME);
 
         } else {
@@ -256,7 +262,8 @@ public class ReferenceBean<T> implements FactoryBean<T>,
         }
         Assert.notNull(this.interfaceName, "The interface name of ReferenceBean is not initialized");
 
-        ReferenceBeanManager referenceBeanManager = beanFactory.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
+        ReferenceBeanManager referenceBeanManager =
+                beanFactory.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
         referenceBeanManager.addReference(this);
     }
 
@@ -276,7 +283,6 @@ public class ReferenceBean<T> implements FactoryBean<T>,
     public void setId(String id) {
         this.id = id;
     }
-
 
     /**
      * The interface of this ReferenceBean, for injection purpose
@@ -337,14 +343,14 @@ public class ReferenceBean<T> implements FactoryBean<T>,
      */
     private void createLazyProxy() {
 
-        //set proxy interfaces
-        //see also: org.apache.dubbo.rpc.proxy.AbstractProxyFactory.getProxy(org.apache.dubbo.rpc.Invoker<T>, boolean)
+        // set proxy interfaces
+        // see also: org.apache.dubbo.rpc.proxy.AbstractProxyFactory.getProxy(org.apache.dubbo.rpc.Invoker<T>, boolean)
         List<Class<?>> interfaces = new ArrayList<>();
         interfaces.add(interfaceClass);
         Class<?>[] internalInterfaces = AbstractProxyFactory.getInternalInterfaces();
         Collections.addAll(interfaces, internalInterfaces);
         if (!StringUtils.isEquals(interfaceClass.getName(), interfaceName)) {
-            //add service interface
+            // add service interface
             try {
                 Class<?> serviceInterface = ClassUtils.forName(interfaceName, beanClassLoader);
                 interfaces.add(serviceInterface);
@@ -364,18 +370,37 @@ public class ReferenceBean<T> implements FactoryBean<T>,
 
     private void generateFromJavassistFirst(List<Class<?>> interfaces) {
         try {
-            this.lazyProxy = Proxy.getProxy(interfaces.toArray(new Class[0])).newInstance(new LazyTargetInvocationHandler(new DubboReferenceLazyInitTargetSource()));
+            this.lazyProxy = Proxy.getProxy(interfaces.toArray(new Class[0]))
+                    .newInstance(new LazyTargetInvocationHandler(new DubboReferenceLazyInitTargetSource()));
         } catch (Throwable fromJavassist) {
             // try fall back to JDK proxy factory
             try {
-                this.lazyProxy = java.lang.reflect.Proxy.newProxyInstance(beanClassLoader, interfaces.toArray(new Class[0]), new LazyTargetInvocationHandler(new DubboReferenceLazyInitTargetSource()));
-                logger.error(PROXY_FAILED, "", "", "Failed to generate proxy by Javassist failed. Fallback to use JDK proxy success. " +
-                    "Interfaces: " + interfaces, fromJavassist);
+                this.lazyProxy = java.lang.reflect.Proxy.newProxyInstance(
+                        beanClassLoader,
+                        interfaces.toArray(new Class[0]),
+                        new LazyTargetInvocationHandler(new DubboReferenceLazyInitTargetSource()));
+                logger.error(
+                        PROXY_FAILED,
+                        "",
+                        "",
+                        "Failed to generate proxy by Javassist failed. Fallback to use JDK proxy success. "
+                                + "Interfaces: " + interfaces,
+                        fromJavassist);
             } catch (Throwable fromJdk) {
-                logger.error(PROXY_FAILED, "", "", "Failed to generate proxy by Javassist failed. Fallback to use JDK proxy is also failed. " +
-                    "Interfaces: " + interfaces + " Javassist Error.", fromJavassist);
-                logger.error(PROXY_FAILED, "", "", "Failed to generate proxy by Javassist failed. Fallback to use JDK proxy is also failed. " +
-                    "Interfaces: " + interfaces + " JDK Error.", fromJdk);
+                logger.error(
+                        PROXY_FAILED,
+                        "",
+                        "",
+                        "Failed to generate proxy by Javassist failed. Fallback to use JDK proxy is also failed. "
+                                + "Interfaces: " + interfaces + " Javassist Error.",
+                        fromJavassist);
+                logger.error(
+                        PROXY_FAILED,
+                        "",
+                        "",
+                        "Failed to generate proxy by Javassist failed. Fallback to use JDK proxy is also failed. "
+                                + "Interfaces: " + interfaces + " JDK Error.",
+                        fromJdk);
                 throw fromJavassist;
             }
         }
@@ -383,22 +408,33 @@ public class ReferenceBean<T> implements FactoryBean<T>,
 
     private void generateFromJdk(List<Class<?>> interfaces) {
         try {
-            this.lazyProxy = java.lang.reflect.Proxy.newProxyInstance(beanClassLoader, interfaces.toArray(new Class[0]), new LazyTargetInvocationHandler(new DubboReferenceLazyInitTargetSource()));
+            this.lazyProxy = java.lang.reflect.Proxy.newProxyInstance(
+                    beanClassLoader,
+                    interfaces.toArray(new Class[0]),
+                    new LazyTargetInvocationHandler(new DubboReferenceLazyInitTargetSource()));
         } catch (Throwable fromJdk) {
-            logger.error(PROXY_FAILED, "", "", "Failed to generate proxy by Javassist failed. Fallback to use JDK proxy is also failed. " +
-                "Interfaces: " + interfaces + " JDK Error.", fromJdk);
+            logger.error(
+                    PROXY_FAILED,
+                    "",
+                    "",
+                    "Failed to generate proxy by Javassist failed. Fallback to use JDK proxy is also failed. "
+                            + "Interfaces: " + interfaces + " JDK Error.",
+                    fromJdk);
             throw fromJdk;
         }
     }
 
     private Object getCallProxy() throws Exception {
         if (referenceConfig == null) {
-            throw new IllegalStateException("ReferenceBean is not ready yet, please make sure to call reference interface method after dubbo is started.");
+            throw new IllegalStateException(
+                    "ReferenceBean is not ready yet, please make sure to call reference interface method after dubbo is started.");
         }
-        //get reference proxy
-        //Subclasses should synchronize on the given Object if they perform any sort of extended singleton creation phase.
-        // In particular, subclasses should not have their own mutexes involved in singleton creation, to avoid the potential for deadlocks in lazy-init situations.
-        //The redundant type cast is to be compatible with earlier than spring-4.2
+        // get reference proxy
+        // Subclasses should synchronize on the given Object if they perform any sort of extended singleton creation
+        // phase.
+        // In particular, subclasses should not have their own mutexes involved in singleton creation, to avoid the
+        // potential for deadlocks in lazy-init situations.
+        // The redundant type cast is to be compatible with earlier than spring-4.2
         if (referenceConfig.configInitialized()) {
             return referenceConfig.get();
         }

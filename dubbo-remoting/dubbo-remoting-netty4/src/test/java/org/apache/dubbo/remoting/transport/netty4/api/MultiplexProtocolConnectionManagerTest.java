@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.remoting.transport.netty4.api;
 
 import org.apache.dubbo.common.URL;
@@ -27,17 +26,17 @@ import org.apache.dubbo.remoting.api.connection.ConnectionManager;
 import org.apache.dubbo.remoting.api.connection.MultiplexProtocolConnectionManager;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 import org.apache.dubbo.remoting.transport.netty4.NettyPortUnificationServer;
-
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.function.Consumer;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
 
@@ -47,7 +46,6 @@ public class MultiplexProtocolConnectionManagerTest {
     private static URL url2;
 
     private static NettyPortUnificationServer server;
-
 
     private static ConnectionManager connectionManager;
 
@@ -71,7 +69,8 @@ public class MultiplexProtocolConnectionManagerTest {
         server = new NettyPortUnificationServer(url1, new DefaultPuHandler());
         server.bind();
         connectionManager = url1.getOrDefaultFrameworkModel()
-                .getExtensionLoader(ConnectionManager.class).getExtension(MultiplexProtocolConnectionManager.NAME);
+                .getExtensionLoader(ConnectionManager.class)
+                .getExtension(MultiplexProtocolConnectionManager.NAME);
     }
 
     @AfterAll
@@ -121,6 +120,4 @@ public class MultiplexProtocolConnectionManagerTest {
             // ignored
         }
     }
-
 }
-

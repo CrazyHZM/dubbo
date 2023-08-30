@@ -59,7 +59,10 @@ public class RegistryStatComposite extends AbstractMetricsExport {
         for (MetricsKey metricsKey : appStats.keySet()) {
             Map<ApplicationMetric, AtomicLong> stringAtomicLongMap = appStats.get(metricsKey);
             for (ApplicationMetric registerKeyMetric : stringAtomicLongMap.keySet()) {
-                list.add(new GaugeMetricSample<>(metricsKey, registerKeyMetric.getTags(), category, stringAtomicLongMap, value -> value.get(registerKeyMetric).get()));
+                list.add(new GaugeMetricSample<>(
+                        metricsKey, registerKeyMetric.getTags(), category, stringAtomicLongMap, value -> value.get(
+                                        registerKeyMetric)
+                                .get()));
             }
         }
         return list;
@@ -70,8 +73,11 @@ public class RegistryStatComposite extends AbstractMetricsExport {
             return;
         }
         ApplicationMetric applicationMetric = new ApplicationMetric(getApplicationModel());
-        applicationMetric.setExtraInfo(Collections.singletonMap(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name));
-        appStats.get(metricsKey).computeIfAbsent(applicationMetric, k -> new AtomicLong(0L)).getAndAdd(SELF_INCREMENT_SIZE);
+        applicationMetric.setExtraInfo(
+                Collections.singletonMap(RegistryConstants.REGISTRY_CLUSTER_KEY.toLowerCase(), name));
+        appStats.get(metricsKey)
+                .computeIfAbsent(applicationMetric, k -> new AtomicLong(0L))
+                .getAndAdd(SELF_INCREMENT_SIZE);
         MetricsSupport.fillZero(appStats);
     }
 

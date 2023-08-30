@@ -28,7 +28,8 @@ public class RestFilterContext implements FilterContext {
     protected ServiceDeployer serviceDeployer;
     protected boolean completed;
 
-    public RestFilterContext(URL url, RequestFacade requestFacade, NettyHttpResponse response, ServiceDeployer serviceDeployer) {
+    public RestFilterContext(
+            URL url, RequestFacade requestFacade, NettyHttpResponse response, ServiceDeployer serviceDeployer) {
         this.url = url;
         this.requestFacade = requestFacade;
         this.response = response;

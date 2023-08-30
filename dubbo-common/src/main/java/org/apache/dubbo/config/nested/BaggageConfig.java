@@ -39,8 +39,7 @@ public class BaggageConfig implements Serializable {
      */
     private List<String> remoteFields = new ArrayList<>();
 
-    public BaggageConfig() {
-    }
+    public BaggageConfig() {}
 
     public BaggageConfig(Boolean enabled) {
         this.enabled = enabled;
@@ -89,8 +88,7 @@ public class BaggageConfig implements Serializable {
          */
         private List<String> fields = new ArrayList<>();
 
-        public Correlation() {
-        }
+        public Correlation() {}
 
         public Correlation(boolean enabled) {
             this.enabled = enabled;
@@ -116,6 +114,5 @@ public class BaggageConfig implements Serializable {
         public void setFields(List<String> fields) {
             this.fields = fields;
         }
-
     }
 }

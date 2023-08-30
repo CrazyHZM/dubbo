@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
 public class QosReflectionTypeDescriberRegistrar implements ReflectionTypeDescriberRegistrar {
 
     @Override
@@ -39,6 +38,7 @@ public class QosReflectionTypeDescriberRegistrar implements ReflectionTypeDescri
     private TypeDescriber buildTypeDescriberWithPublicMethod(Class<?> cl) {
         Set<MemberCategory> memberCategories = new HashSet<>();
         memberCategories.add(MemberCategory.INVOKE_PUBLIC_METHODS);
-        return new TypeDescriber(cl.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
+        return new TypeDescriber(
+                cl.getName(), null, new HashSet<>(), new HashSet<>(), new HashSet<>(), memberCategories);
     }
 }

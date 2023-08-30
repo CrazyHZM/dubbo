@@ -37,6 +37,9 @@ import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.BeanFactory;
@@ -45,10 +48,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 
 /**
  *
@@ -102,7 +101,7 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
     private void prepareDubboConfigBeans() {
         logger.info("loading dubbo config beans ...");
 
-        //Make sure all these config beans are initialed and registered to ConfigManager
+        // Make sure all these config beans are initialed and registered to ConfigManager
         // load application config beans
         loadConfigBeansOfType(ApplicationConfig.class, configManager);
         loadConfigBeansOfType(RegistryConfig.class, configManager);
@@ -129,7 +128,8 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
         logger.info("dubbo config beans are loaded.");
     }
 
-    private void loadConfigBeansOfType(Class<? extends AbstractConfig> configClass, AbstractConfigManager configManager) {
+    private void loadConfigBeansOfType(
+            Class<? extends AbstractConfig> configClass, AbstractConfigManager configManager) {
         String[] beanNames = beanFactory.getBeanNamesForType(configClass, true, false);
         for (String beanName : beanNames) {
             AbstractConfig configBean = beanFactory.getBean(beanName, configClass);
@@ -137,5 +137,4 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
             configManager.addConfig(configBean);
         }
     }
-
 }

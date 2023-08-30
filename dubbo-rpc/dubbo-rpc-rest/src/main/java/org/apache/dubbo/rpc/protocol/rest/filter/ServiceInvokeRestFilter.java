@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.filter;
 
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpRequest;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -47,6 +45,9 @@ import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 
 import java.util.List;
 
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpRequest;
+
 @Activate(value = "invoke", order = Integer.MAX_VALUE)
 public class ServiceInvokeRestFilter implements RestRequestFilter {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
@@ -54,7 +55,8 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
     private final List<RestResponseInterceptor> restResponseInterceptors;
 
     public ServiceInvokeRestFilter(FrameworkModel frameworkModel) {
-        restResponseInterceptors = frameworkModel.getExtensionLoader(RestResponseInterceptor.class).getActivateExtensions();
+        restResponseInterceptors =
+                frameworkModel.getExtensionLoader(RestResponseInterceptor.class).getActivateExtensions();
     }
 
     @Override
@@ -63,16 +65,21 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
 
         FullHttpRequest nettyHttpRequest = nettyRequestFacade.getRequest();
 
-        doHandler(nettyHttpRequest, restFilterContext.getResponse(), restFilterContext.getRequestFacade(), restFilterContext.getUrl(), restFilterContext.getServiceDeployer());
-
+        doHandler(
+                nettyHttpRequest,
+                restFilterContext.getResponse(),
+                restFilterContext.getRequestFacade(),
+                restFilterContext.getUrl(),
+                restFilterContext.getServiceDeployer());
     }
 
-
-    private void doHandler(HttpRequest nettyHttpRequest,
-                           NettyHttpResponse nettyHttpResponse,
-                           RequestFacade request,
-                           URL url,
-                           ServiceDeployer serviceDeployer) throws Exception {
+    private void doHandler(
+            HttpRequest nettyHttpRequest,
+            NettyHttpResponse nettyHttpResponse,
+            RequestFacade request,
+            URL url,
+            ServiceDeployer serviceDeployer)
+            throws Exception {
         PathMatcher pathMatcher = RestRPCInvocationUtil.createPathMatcher(request);
 
         // path NoFound 404
@@ -80,22 +87,23 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
             throw new PathNoFoundException("rest service Path no found, current path info:" + pathMatcher);
         }
 
-
         // method disallowed
         if (!serviceDeployer.isMethodAllowed(pathMatcher)) {
-            nettyHttpResponse.sendError(405, "service require request method is : "
-                + serviceDeployer.pathHttpMethods(pathMatcher)
-                + ", but current request method is: " + request.getMethod()
-            );
+            nettyHttpResponse.sendError(
+                    405,
+                    "service require request method is : "
+                            + serviceDeployer.pathHttpMethods(pathMatcher)
+                            + ", but current request method is: " + request.getMethod());
             return;
         }
         // compare http method and  acquire metadata by request
-        InvokerAndRestMethodMetadataPair restMethodMetadataPair = RestRPCInvocationUtil.getRestMethodMetadataAndInvokerPair(pathMatcher.compareHttpMethod(true), serviceDeployer);
+        InvokerAndRestMethodMetadataPair restMethodMetadataPair =
+                RestRPCInvocationUtil.getRestMethodMetadataAndInvokerPair(
+                        pathMatcher.compareHttpMethod(true), serviceDeployer);
 
         Invoker invoker = restMethodMetadataPair.getInvoker();
 
         RestMethodMetadata restMethodMetadata = restMethodMetadataPair.getRestMethodMetadata();
-
 
         // content-type  support judge,throw unSupportException
         acceptSupportJudge(request, restMethodMetadata.getReflectMethod().getReturnType());
@@ -104,7 +112,8 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
         RpcInvocation rpcInvocation = RestRPCInvocationUtil.createBaseRpcInvocation(request, restMethodMetadata);
 
         // parse method real args
-        RestRPCInvocationUtil.parseMethodArgs(rpcInvocation, request, nettyHttpRequest, nettyHttpResponse, restMethodMetadata);
+        RestRPCInvocationUtil.parseMethodArgs(
+                rpcInvocation, request, nettyHttpRequest, nettyHttpResponse, restMethodMetadata);
 
         // execute business  method invoke
         Result result = invoker.invoke(rpcInvocation);
@@ -114,30 +123,35 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
 
         if (result.hasException()) {
             Throwable exception = result.getException();
-            logger.error("", exception.getMessage(), "", "dubbo rest protocol provider Invoker invoke error", exception);
+            logger.error(
+                    "", exception.getMessage(), "", "dubbo rest protocol provider Invoker invoke error", exception);
 
             if (serviceDeployer.getExceptionMapper().hasExceptionMapper(exception)) {
-                ExceptionHandlerResult exceptionToResult = serviceDeployer.getExceptionMapper().exceptionToResult(result.getException());
-                writeResult(nettyHttpResponse, request, url, exceptionToResult.getEntity(), rpcInvocation.getReturnType());
+                ExceptionHandlerResult exceptionToResult =
+                        serviceDeployer.getExceptionMapper().exceptionToResult(result.getException());
+                writeResult(
+                        nettyHttpResponse, request, url, exceptionToResult.getEntity(), rpcInvocation.getReturnType());
                 nettyHttpResponse.setStatus(exceptionToResult.getStatus());
             } else {
-                nettyHttpResponse.sendError(500,
-                    "\n dubbo rest business exception, error cause is: "
-                        + result.getException().getCause()
-                        + "\n message is: " + result.getException().getMessage()
-                        + "\n stacktrace is: " + stackTraceToString(exception));
+                nettyHttpResponse.sendError(
+                        500,
+                        "\n dubbo rest business exception, error cause is: "
+                                + result.getException().getCause()
+                                + "\n message is: " + result.getException().getMessage()
+                                + "\n stacktrace is: " + stackTraceToString(exception));
             }
         }
 
         try {
             // invoke the intercept chain before Result  write to  response
-            executeResponseIntercepts(url, request, nettyHttpResponse, result.getValue(), rpcInvocation, serviceDeployer);
+            executeResponseIntercepts(
+                    url, request, nettyHttpResponse, result.getValue(), rpcInvocation, serviceDeployer);
         } catch (Exception exception) {
-            logger.error("", exception.getMessage(), "", "dubbo rest protocol execute ResponseIntercepts error", exception);
+            logger.error(
+                    "", exception.getMessage(), "", "dubbo rest protocol execute ResponseIntercepts error", exception);
             throw exception;
         }
     }
-
 
     /**
      * write return value by accept
@@ -148,17 +162,22 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
      * @param returnType
      * @throws Exception
      */
-    public static void writeResult(NettyHttpResponse nettyHttpResponse, RequestFacade<?> request, URL url, Object value, Class<?> returnType) throws Exception {
+    public static void writeResult(
+            NettyHttpResponse nettyHttpResponse, RequestFacade<?> request, URL url, Object value, Class<?> returnType)
+            throws Exception {
         MediaType mediaType = getAcceptMediaType(request, returnType);
         writeResult(nettyHttpResponse, url, value, returnType, mediaType);
     }
 
-
-    public static void writeResult(NettyHttpResponse nettyHttpResponse, URL url, Object value, Class<?> returnType, MediaType mediaType) throws Exception {
-        MessageCodecResultPair booleanMediaTypePair = HttpMessageCodecManager.httpMessageEncode(nettyHttpResponse.getOutputStream(), value, url, mediaType, returnType);
+    public static void writeResult(
+            NettyHttpResponse nettyHttpResponse, URL url, Object value, Class<?> returnType, MediaType mediaType)
+            throws Exception {
+        MessageCodecResultPair booleanMediaTypePair = HttpMessageCodecManager.httpMessageEncode(
+                nettyHttpResponse.getOutputStream(), value, url, mediaType, returnType);
         // reset raw response result
         nettyHttpResponse.setResponseBody(value);
-        nettyHttpResponse.addOutputHeaders(RestHeaderEnum.CONTENT_TYPE.getHeader(), booleanMediaTypePair.getMediaType().value);
+        nettyHttpResponse.addOutputHeaders(
+                RestHeaderEnum.CONTENT_TYPE.getHeader(), booleanMediaTypePair.getMediaType().value);
     }
 
     /**
@@ -191,15 +210,12 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
                 throw e;
             }
 
-
             if (!accept.contains(mediaType.value)) {
 
                 throw e;
             }
-
         }
     }
-
 
     public static String stackTraceToString(Throwable throwable) {
         StackTraceElement[] stackTrace = throwable.getStackTrace();
@@ -223,9 +239,17 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
      * @param serviceDeployer
      * @throws Exception
      */
-    public void executeResponseIntercepts(URL url, RequestFacade request, NettyHttpResponse nettyHttpResponse, Object result, RpcInvocation rpcInvocation, ServiceDeployer serviceDeployer) throws Exception {
+    public void executeResponseIntercepts(
+            URL url,
+            RequestFacade request,
+            NettyHttpResponse nettyHttpResponse,
+            Object result,
+            RpcInvocation rpcInvocation,
+            ServiceDeployer serviceDeployer)
+            throws Exception {
 
-        RestInterceptContext restFilterContext = new RestInterceptContext(url, request, nettyHttpResponse, serviceDeployer, result, rpcInvocation);
+        RestInterceptContext restFilterContext =
+                new RestInterceptContext(url, request, nettyHttpResponse, serviceDeployer, result, rpcInvocation);
 
         for (RestResponseInterceptor restResponseInterceptor : restResponseInterceptors) {
 
@@ -234,8 +258,6 @@ public class ServiceInvokeRestFilter implements RestRequestFilter {
             if (restFilterContext.complete()) {
                 break;
             }
-
         }
-
     }
 }

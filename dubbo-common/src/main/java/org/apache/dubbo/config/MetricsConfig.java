@@ -99,8 +99,7 @@ public class MetricsConfig extends AbstractConfig {
 
     private Boolean enableRpc;
 
-    public MetricsConfig() {
-    }
+    public MetricsConfig() {}
 
     public MetricsConfig(ApplicationModel applicationModel) {
         super(applicationModel);

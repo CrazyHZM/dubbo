@@ -14,20 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.service.Person;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.alibaba.dubbo.config.ArgumentConfig;
 import com.alibaba.dubbo.config.MethodConfig;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.apache.dubbo.config.Constants.ON_INVOKE_INSTANCE_ATTRIBUTE_KEY;
 import static org.apache.dubbo.config.Constants.ON_INVOKE_METHOD_ATTRIBUTE_KEY;
@@ -107,7 +106,7 @@ class MethodConfigTest {
     }
 
     @Test
-    void testConvertMethodConfig2AsyncInfo() throws Exception{
+    void testConvertMethodConfig2AsyncInfo() throws Exception {
         org.apache.dubbo.config.MethodConfig methodConfig = new org.apache.dubbo.config.MethodConfig();
         methodConfig.setOninvokeMethod("setName");
         methodConfig.setOninvoke(new Person());
@@ -117,7 +116,7 @@ class MethodConfigTest {
         assertEquals(methodInfo.getOninvokeMethod(), Person.class.getMethod("setName", String.class));
     }
 
-    //@Test
+    // @Test
     public void testOnreturn() {
         MethodConfig method = new MethodConfig();
         method.setOnreturn("on-return-object");
@@ -143,7 +142,7 @@ class MethodConfigTest {
         assertThat(parameters.size(), is(0));
     }
 
-    //@Test
+    // @Test
     public void testOnthrow() {
         MethodConfig method = new MethodConfig();
         method.setOnthrow("on-throw-object");
@@ -169,7 +168,7 @@ class MethodConfigTest {
         assertThat(parameters.size(), is(0));
     }
 
-    //@Test
+    // @Test
     public void testOninvoke() {
         MethodConfig method = new MethodConfig();
         method.setOninvoke("on-invoke-object");

@@ -14,8 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.annotation;
+
+import javax.annotation.processing.ProcessingEnvironment;
+
+import java.lang.reflect.Method;
+import java.util.Objects;
 
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTrees;
@@ -23,10 +27,6 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import java.lang.reflect.Method;
-import java.util.Objects;
 
 /**
  * The Context Object of Annotation Processor, which stores objects related to javac.
@@ -39,12 +39,13 @@ public class AnnotationProcessorContext {
     private Context javacContext;
     private Trees trees;
 
-    private AnnotationProcessorContext() { }
+    private AnnotationProcessorContext() {}
 
     private static <T> T jbUnwrap(Class<? extends T> iface, T wrapper) {
         T unwrapped = null;
         try {
-            final Class<?> apiWrappers = wrapper.getClass().getClassLoader().loadClass("org.jetbrains.jps.javac.APIWrappers");
+            final Class<?> apiWrappers =
+                    wrapper.getClass().getClassLoader().loadClass("org.jetbrains.jps.javac.APIWrappers");
             final Method unwrapMethod = apiWrappers.getDeclaredMethod("unwrap", Class.class, Object.class);
             unwrapped = iface.cast(unwrapMethod.invoke(null, iface, wrapper));
         } catch (Throwable ignored) {
@@ -56,8 +57,9 @@ public class AnnotationProcessorContext {
     public static AnnotationProcessorContext fromProcessingEnvironment(ProcessingEnvironment processingEnv) {
         AnnotationProcessorContext apContext = new AnnotationProcessorContext();
 
-        Object procEnvToUnwrap = processingEnv.getClass() == JavacProcessingEnvironment.class ?
-            processingEnv : jbUnwrap(JavacProcessingEnvironment.class, processingEnv);
+        Object procEnvToUnwrap = processingEnv.getClass() == JavacProcessingEnvironment.class
+                ? processingEnv
+                : jbUnwrap(JavacProcessingEnvironment.class, processingEnv);
 
         JavacProcessingEnvironment jcProcessingEnvironment = (JavacProcessingEnvironment) procEnvToUnwrap;
 
@@ -111,8 +113,7 @@ public class AnnotationProcessorContext {
         if (!Objects.equals(javacTrees, context.javacTrees)) return false;
         if (!Objects.equals(treeMaker, context.treeMaker)) return false;
         if (!Objects.equals(names, context.names)) return false;
-        if (!Objects.equals(javacContext, context.javacContext))
-            return false;
+        if (!Objects.equals(javacContext, context.javacContext)) return false;
         return Objects.equals(trees, context.trees);
     }
 
@@ -128,12 +129,11 @@ public class AnnotationProcessorContext {
 
     @Override
     public String toString() {
-        return "AnnotationProcessorContext{" +
-            "javacTrees=" + javacTrees +
-            ", treeMaker=" + treeMaker +
-            ", names=" + names +
-            ", javacContext=" + javacContext +
-            ", trees=" + trees +
-            '}';
+        return "AnnotationProcessorContext{" + "javacTrees="
+                + javacTrees + ", treeMaker="
+                + treeMaker + ", names="
+                + names + ", javacContext="
+                + javacContext + ", trees="
+                + trees + '}';
     }
 }

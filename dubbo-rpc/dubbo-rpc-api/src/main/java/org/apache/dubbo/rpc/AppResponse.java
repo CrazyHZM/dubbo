@@ -58,8 +58,7 @@ public class AppResponse implements Result {
 
     private final Map<String, Object> attributes = new HashMap<>();
 
-    public AppResponse() {
-    }
+    public AppResponse() {}
 
     public AppResponse(Invocation invocation) {
         this.setAttribute(INVOCATION_KEY, invocation);
@@ -86,9 +85,8 @@ public class AppResponse implements Result {
                 // ignore
             }
             if ((exception instanceof RpcException) && !(exception instanceof com.alibaba.dubbo.rpc.RpcException)) {
-                com.alibaba.dubbo.rpc.RpcException recreated =
-                    new com.alibaba.dubbo.rpc.RpcException(((RpcException) exception).getCode(),
-                        exception.getMessage(), exception.getCause());
+                com.alibaba.dubbo.rpc.RpcException recreated = new com.alibaba.dubbo.rpc.RpcException(
+                        ((RpcException) exception).getCode(), exception.getMessage(), exception.getCause());
                 recreated.setStackTrace(exception.getStackTrace());
                 throw recreated;
             }
@@ -228,22 +226,26 @@ public class AppResponse implements Result {
 
     @Override
     public Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn) {
-        throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
+        throw new UnsupportedOperationException(
+                "AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
     }
 
     @Override
     public <U> CompletableFuture<U> thenApply(Function<Result, ? extends U> fn) {
-        throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
+        throw new UnsupportedOperationException(
+                "AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
     }
 
     @Override
     public Result get() throws InterruptedException, ExecutionException {
-        throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
+        throw new UnsupportedOperationException(
+                "AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
     }
 
     @Override
     public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
+        throw new UnsupportedOperationException(
+                "AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
     }
 
     public void clear() {

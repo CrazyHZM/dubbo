@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.model;
 
 import org.apache.dubbo.rpc.Invocation;
@@ -81,14 +80,13 @@ public class MethodMetric extends ServiceKeyMetric {
 
     @Override
     public String toString() {
-        return "MethodMetric{" +
-                "applicationName='" + getApplicationName() + '\'' +
-                ", side='" + side + '\'' +
-                ", interfaceName='" + getServiceKey() + '\'' +
-                ", methodName='" + methodName + '\'' +
-                ", group='" + group + '\'' +
-                ", version='" + version + '\'' +
-                '}';
+        return "MethodMetric{" + "applicationName='"
+                + getApplicationName() + '\'' + ", side='"
+                + side + '\'' + ", interfaceName='"
+                + getServiceKey() + '\'' + ", methodName='"
+                + methodName + '\'' + ", group='"
+                + group + '\'' + ", version='"
+                + version + '\'' + '}';
     }
 
     @Override
@@ -96,10 +94,16 @@ public class MethodMetric extends ServiceKeyMetric {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MethodMetric that = (MethodMetric) o;
-        return Objects.equals(getApplicationModel(), that.getApplicationModel()) && Objects.equals(side, that.side) && Objects.equals(getServiceKey(), that.getServiceKey()) && Objects.equals(methodName, that.methodName) && Objects.equals(group, that.group) && Objects.equals(version, that.version);
+        return Objects.equals(getApplicationModel(), that.getApplicationModel())
+                && Objects.equals(side, that.side)
+                && Objects.equals(getServiceKey(), that.getServiceKey())
+                && Objects.equals(methodName, that.methodName)
+                && Objects.equals(group, that.group)
+                && Objects.equals(version, that.version);
     }
 
     private volatile int hashCode = 0;
+
     @Override
     public int hashCode() {
         if (hashCode == 0) {

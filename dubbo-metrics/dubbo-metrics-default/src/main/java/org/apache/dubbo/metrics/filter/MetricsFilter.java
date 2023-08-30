@@ -49,7 +49,11 @@ public class MetricsFilter implements ScopeModelAware {
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
-        this.rpcMetricsEnable = applicationModel.getApplicationConfigManager().getMetrics().map(MetricsConfig::getEnableRpc).orElse(true);
+        this.rpcMetricsEnable = applicationModel
+                .getApplicationConfigManager()
+                .getMetrics()
+                .map(MetricsConfig::getEnableRpc)
+                .orElse(true);
         this.appName = applicationModel.tryGetApplicationName();
         this.metricsDispatcher = applicationModel.getBeanFactory().getBean(MetricsDispatcher.class);
         this.defaultMetricsCollector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
@@ -62,8 +66,13 @@ public class MetricsFilter implements ScopeModelAware {
     public Result invoke(Invoker<?> invoker, Invocation invocation, boolean isProvider) throws RpcException {
         if (rpcMetricsEnable) {
             try {
-                RequestEvent requestEvent = RequestEvent.toRequestEvent(applicationModel, appName, metricsDispatcher,
-                    defaultMetricsCollector, invocation, isProvider ? PROVIDER : CONSUMER);
+                RequestEvent requestEvent = RequestEvent.toRequestEvent(
+                        applicationModel,
+                        appName,
+                        metricsDispatcher,
+                        defaultMetricsCollector,
+                        invocation,
+                        isProvider ? PROVIDER : CONSUMER);
                 MetricsEventBus.before(requestEvent);
                 invocation.put(METRIC_FILTER_EVENT, requestEvent);
             } catch (Throwable t) {
@@ -104,5 +113,4 @@ public class MetricsFilter implements ScopeModelAware {
             }
         }
     }
-
 }

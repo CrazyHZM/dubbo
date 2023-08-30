@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.annotation.util;
 
 import java.io.File;
@@ -42,7 +41,6 @@ public final class FileUtils {
 
     private static final Pattern WINDOWS_PATH_PATTERN = Pattern.compile("file:/\\w:/.*");
 
-
     private FileUtils() {
         throw new UnsupportedOperationException("No instance of FileUtils for you! ");
     }
@@ -51,10 +49,12 @@ public final class FileUtils {
         List<Path> targetFolders;
 
         try (Stream<Path> filesStream = Files.walk(Paths.get(rootPath))) {
-            targetFolders = filesStream.filter(x -> !x.toFile().isFile())
-                .filter(x -> x.toString().contains("classes") && !x.toString().contains("test-classes"))
-                .filter(x -> x.toString().contains("\\org\\apache\\dubbo".replace('\\', File.separatorChar)))
-                .collect(Collectors.toList());
+            targetFolders = filesStream
+                    .filter(x -> !x.toFile().isFile())
+                    .filter(x ->
+                            x.toString().contains("classes") && !x.toString().contains("test-classes"))
+                    .filter(x -> x.toString().contains("\\org\\apache\\dubbo".replace('\\', File.separatorChar)))
+                    .collect(Collectors.toList());
 
             return targetFolders;
 
@@ -85,8 +85,8 @@ public final class FileUtils {
         String classesPathString = "\\target\\classes\\".replace("\\", File.separator);
         String sourcesPathString = "\\src\\main\\java\\".replace("\\", File.separator);
 
-        String sourceFilePathByReplace = classFilePath.replace(classesPathString, sourcesPathString)
-            .replace(".class", ".java");
+        String sourceFilePathByReplace =
+                classFilePath.replace(classesPathString, sourcesPathString).replace(".class", ".java");
 
         // Inner classes.
         if (sourceFilePathByReplace.lastIndexOf('$') != -1) {
@@ -129,7 +129,8 @@ public final class FileUtils {
      * @return absolute path of resource
      */
     public static String getResourceFilePath(String path) {
-        String resourceFilePath = FileUtils.class.getClassLoader().getResource(path).toString();
+        String resourceFilePath =
+                FileUtils.class.getClassLoader().getResource(path).toString();
 
         if (WINDOWS_PATH_PATTERN.matcher(resourceFilePath).matches()) {
             resourceFilePath = resourceFilePath.replace("file:/", "");
@@ -144,9 +145,7 @@ public final class FileUtils {
 
         try (Stream<Path> classFilesStream = Files.walk(targetFolder)) {
 
-            return classFilesStream
-                    .filter(x -> x.toFile().isFile())
-                    .collect(Collectors.toList());
+            return classFilesStream.filter(x -> x.toFile().isFile()).collect(Collectors.toList());
 
         } catch (IOException e) {
             return Collections.emptyList();

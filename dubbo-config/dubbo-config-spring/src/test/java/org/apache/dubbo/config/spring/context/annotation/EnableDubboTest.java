@@ -84,7 +84,6 @@ class EnableDubboTest {
 
         // Test @Transactional is present or not
         Assertions.assertNotNull(findAnnotation(beanClass, Transactional.class));
-
     }
 
     @Test
@@ -142,7 +141,6 @@ class EnableDubboTest {
 
         // Test multiple binding
         Assertions.assertEquals("N/A", registryConfig.getAddress());
-
     }
 
     @EnableDubbo(scanBasePackages = "org.apache.dubbo.config.spring.context.annotation.provider")
@@ -163,17 +161,11 @@ class EnableDubboTest {
                 }
 
                 @Override
-                public void commit(TransactionStatus status) throws TransactionException {
-
-                }
+                public void commit(TransactionStatus status) throws TransactionException {}
 
                 @Override
-                public void rollback(TransactionStatus status) throws TransactionException {
-
-                }
+                public void rollback(TransactionStatus status) throws TransactionException {}
             };
         }
     }
-
-
 }

@@ -14,19 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.reactive;
 
 import org.apache.dubbo.reactive.handler.OneToManyMethodHandler;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.Flux;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -44,15 +43,12 @@ public final class OneToManyMethodHandlerTest {
         AtomicInteger completeCounter = new AtomicInteger();
         AtomicInteger errorCounter = new AtomicInteger();
         ServerCallToObserverAdapter<String> responseObserver = Mockito.mock(ServerCallToObserverAdapter.class);
-        doAnswer(o -> nextCounter.incrementAndGet())
-            .when(responseObserver).onNext(anyString());
-        doAnswer(o -> completeCounter.incrementAndGet())
-            .when(responseObserver).onCompleted();
-        doAnswer(o -> errorCounter.incrementAndGet())
-            .when(responseObserver).onError(any(Throwable.class));
-        OneToManyMethodHandler<String, String> handler = new OneToManyMethodHandler<>(requestMono ->
-            requestMono.flatMapMany(r -> Flux.fromArray(r.split(","))));
-        CompletableFuture<?> future = handler.invoke(new Object[]{request, responseObserver});
+        doAnswer(o -> nextCounter.incrementAndGet()).when(responseObserver).onNext(anyString());
+        doAnswer(o -> completeCounter.incrementAndGet()).when(responseObserver).onCompleted();
+        doAnswer(o -> errorCounter.incrementAndGet()).when(responseObserver).onError(any(Throwable.class));
+        OneToManyMethodHandler<String, String> handler =
+                new OneToManyMethodHandler<>(requestMono -> requestMono.flatMapMany(r -> Flux.fromArray(r.split(","))));
+        CompletableFuture<?> future = handler.invoke(new Object[] {request, responseObserver});
         Assertions.assertTrue(future.isDone());
         Assertions.assertEquals(7, nextCounter.get());
         Assertions.assertEquals(0, errorCounter.get());
@@ -66,23 +62,20 @@ public final class OneToManyMethodHandlerTest {
         AtomicInteger completeCounter = new AtomicInteger();
         AtomicInteger errorCounter = new AtomicInteger();
         ServerCallToObserverAdapter<String> responseObserver = Mockito.mock(ServerCallToObserverAdapter.class);
-        doAnswer(o -> nextCounter.incrementAndGet())
-            .when(responseObserver).onNext(anyString());
-        doAnswer(o -> completeCounter.incrementAndGet())
-            .when(responseObserver).onCompleted();
-        doAnswer(o -> errorCounter.incrementAndGet())
-            .when(responseObserver).onError(any(Throwable.class));
-        OneToManyMethodHandler<String, String> handler = new OneToManyMethodHandler<>(requestMono ->
-            Flux.create(emitter -> {
-                for (int i = 0; i < 10; i++) {
-                    if (i == 6) {
-                        emitter.error(new Throwable());
-                    } else {
-                        emitter.next(String.valueOf(i));
+        doAnswer(o -> nextCounter.incrementAndGet()).when(responseObserver).onNext(anyString());
+        doAnswer(o -> completeCounter.incrementAndGet()).when(responseObserver).onCompleted();
+        doAnswer(o -> errorCounter.incrementAndGet()).when(responseObserver).onError(any(Throwable.class));
+        OneToManyMethodHandler<String, String> handler =
+                new OneToManyMethodHandler<>(requestMono -> Flux.create(emitter -> {
+                    for (int i = 0; i < 10; i++) {
+                        if (i == 6) {
+                            emitter.error(new Throwable());
+                        } else {
+                            emitter.next(String.valueOf(i));
+                        }
                     }
-                }
-            }));
-        CompletableFuture<?> future = handler.invoke(new Object[]{request, responseObserver});
+                }));
+        CompletableFuture<?> future = handler.invoke(new Object[] {request, responseObserver});
         Assertions.assertTrue(future.isDone());
         Assertions.assertEquals(6, nextCounter.get());
         Assertions.assertEquals(1, errorCounter.get());

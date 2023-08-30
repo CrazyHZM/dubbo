@@ -23,6 +23,9 @@ import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
 import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
 import org.apache.dubbo.config.spring6.utils.AotUtils;
+
+import java.util.Collection;
+
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.TypeReference;
@@ -35,8 +38,6 @@ import org.springframework.beans.factory.support.RegisteredBean;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 
-import java.util.Collection;
-
 /**
  * A {@link BeanFactoryPostProcessor} used for processing of {@link Service @Service} annotated classes and annotated bean in java config classes.
  * It's also the infrastructure class of XML {@link BeanDefinitionParser} on &lt;dubbo:annotation /&gt;
@@ -45,7 +46,8 @@ import java.util.Collection;
  * @see BeanDefinitionRegistryPostProcessor
  * @since 3.2
  */
-public class ServiceAnnotationWithAotPostProcessor extends ServiceAnnotationPostProcessor implements BeanRegistrationAotProcessor {
+public class ServiceAnnotationWithAotPostProcessor extends ServiceAnnotationPostProcessor
+        implements BeanRegistrationAotProcessor {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
@@ -86,11 +88,11 @@ public class ServiceAnnotationWithAotPostProcessor extends ServiceAnnotationPost
 
         @Override
         public void applyTo(GenerationContext generationContext, BeanRegistrationCode beanRegistrationCode) {
-            generationContext.getRuntimeHints().reflection().registerType(TypeReference.of(cl),
-                    MemberCategory.INVOKE_PUBLIC_METHODS);
+            generationContext
+                    .getRuntimeHints()
+                    .reflection()
+                    .registerType(TypeReference.of(cl), MemberCategory.INVOKE_PUBLIC_METHODS);
             AotUtils.registerSerializationForService(cl, generationContext.getRuntimeHints());
-
         }
     }
-
 }

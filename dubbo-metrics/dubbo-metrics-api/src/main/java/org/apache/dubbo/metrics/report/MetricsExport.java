@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.report;
 
 import org.apache.dubbo.metrics.model.MetricsCategory;
@@ -32,5 +31,4 @@ public interface MetricsExport {
      * export all.
      */
     List<MetricSample> export(MetricsCategory category);
-
 }
